@@ -1,14 +1,25 @@
+:root {
+    --bg-dark: #1A1A1D;
+    --gray: #4E4E50;
+    --wine: #6F2232;
+    --berry: #950740;
+    --pink: #C3073F;
+    --text-light: #FFFFFF;
+}
+
 body {
     font-family: Arial, sans-serif;
     max-width: 700px;
     margin: 30px auto;
-    background-color: #f8f8f8;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
     padding: 20px;
     border-radius: 10px;
 }
 
-h1 {
+h1, h2 {
     text-align: center;
+    color: var(--pink);
 }
 
 form {
@@ -18,6 +29,7 @@ form {
 label {
     display: block;
     margin-top: 10px;
+    color: var(--gray);
 }
 
 input, textarea, select, button {
@@ -25,40 +37,61 @@ input, textarea, select, button {
     padding: 8px;
     margin-top: 5px;
     border-radius: 5px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--gray);
+    background-color: var(--bg-dark);
+    color: var(--text-light);
 }
 
 button {
-    background-color: #4CAF50;
-    color: white;
+    background-color: var(--berry);
+    color: var(--text-light);
     cursor: pointer;
     margin-top: 15px;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, opacity 0.3s;
 }
 
-button:hover {
-    background-color: #45a049;
+button:disabled {
+    background-color: var(--gray);
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .review {
-    background: white;
+    background: var(--gray);
     padding: 15px;
     margin-bottom: 15px;
     border-radius: 5px;
-    border-left: 4px solid #5c9ded;
+    border-left: 4px solid var(--pink);
 }
 
 .review h3 {
     margin: 0 0 5px 0;
+    color: var(--pink);
 }
 
 .rating {
-    color: #ffa500;
+    color: var(--berry);
     font-weight: bold;
 }
 
 .meta {
     font-size: 0.9em;
-    color: #555;
+    color: var(--text-light);
     margin-bottom: 8px;
+}
+
+.rankings {
+    margin-bottom: 30px;
+}
+
+.ranking {
+    background: var(--gray);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.ranking ol {
+    padding-left: 20px;
+    color: var(--text-light);
 }
