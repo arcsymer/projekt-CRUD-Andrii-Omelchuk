@@ -1,24 +1,17 @@
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("reviewForm");
     const submitBtn = document.getElementById("submitBtn");
-
     const fields = ["restaurant","address","date","dish","rating"];
-    fields.forEach(id => {
-        document.getElementById(id).addEventListener("input", checkForm);
-    });
+
+    fields.forEach(id => document.getElementById(id).addEventListener("input", checkForm));
     document.getElementById("rating").addEventListener("change", checkForm);
 
-    function checkForm(){
-        const allFilled = fields.every(id => {
-            const el = document.getElementById(id);
-            return el.value.trim() !== "";
-        });
-        submitBtn.disabled = !allFilled;
+    function checkForm() {
+        submitBtn.disabled = !fields.every(id => document.getElementById(id).value.trim() !== "");
     }
 
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", e => {
         e.preventDefault();
-
         const review = {
             id: document.getElementById("reviewId").value,
             restaurant: document.getElementById("restaurant").value.trim(),
@@ -28,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
             rating: document.getElementById("rating").value,
             comment: document.getElementById("comment").value.trim()
         };
-
         const url = review.id ? "update.php" : "create.php";
 
         fetch(url, {
@@ -46,7 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadAll();
 });
 
-function loadAll(){
+function loadAll() {
     loadReviews();
     loadRankings();
 }
@@ -57,19 +49,21 @@ function loadReviews() {
         .then(data => {
             const container = document.getElementById("reviews");
             container.innerHTML = "";
-            data.forEach(review => {
+            data.forEach(r => {
                 const div = document.createElement("div");
                 div.className = "review";
                 div.innerHTML = `
-                    <h3>${review.dish} — <span class="rating">${"★".repeat(review.rating)}</span></h3>
-                    <div class="meta">
-                        <strong>Restauracja:</strong> ${review.restaurant}<br>
-                        <strong>Adres:</strong> ${review.address}<br>
-                        <strong>Data wizyty:</strong> ${review.visit_date}
+                    <div class="info">
+                        <h3>${r.dish} — <span class="rating">${"★".repeat(r.rating)}</span></h3>
+                        <div class="meta">
+                            <strong>Restauracja:</strong> ${r.restaurant}<br>
+                            <strong>Adres:</strong> ${r.address}<br>
+                            <strong>Data wizyty:</strong> ${r.visit_date}
+                        </div>
+                        <button onclick="editReview(${r.id})">Edytuj</button>
+                        <button onclick="deleteReview(${r.id})">Usuń</button>
                     </div>
-                    <p>${review.comment}</p>
-                    <button onclick="editReview(${review.id})">Edytuj</button>
-                    <button onclick="deleteReview(${review.id})">Usuń</button>
+                    <div class="comment">${r.comment}</div>
                 `;
                 container.appendChild(div);
             });
@@ -80,64 +74,63 @@ function editReview(id) {
     fetch(`read.php?id=${id}`)
         .then(res => res.json())
         .then(data => {
-            const review = data[0];
-            document.getElementById("reviewId").value = review.id;
-            document.getElementById("restaurant").value = review.restaurant;
-            document.getElementById("address").value = review.address;
-            document.getElementById("date").value = review.visit_date;
-            document.getElementById("dish").value = review.dish;
-            document.getElementById("rating").value = review.rating;
-            document.getElementById("comment").value = review.comment;
-            window.scrollTo(0,0);
+            const r = data[0];
+            document.getElementById("reviewId").value = r.id;
+            document.getElementById("restaurant").value = r.restaurant;
+            document.getElementById("address").value = r.address;
+            document.getElementById("date").value = r.visit_date;
+            document.getElementById("dish").value = r.dish;
+            document.getElementById("rating").value = r.rating;
+            document.getElementById("comment").value = r.comment;
             document.getElementById("submitBtn").disabled = false;
         });
 }
 
 function deleteReview(id) {
     if (!confirm("Czy na pewno chcesz usunąć tę recenzję?")) return;
-    fetch(`delete.php?id=${id}`)
-        .then(() => loadAll());
+    fetch(`delete.php?id=${id}`).then(() => loadAll());
 }
 
-function loadRankings(){
+function loadRankings() {
     fetch("read.php")
         .then(res => res.json())
         .then(data => {
-            // Подсчёт посещаемости и средней оценки по ресторанам
             const visits = {};
             const ratings = {};
 
+            data.forEach(r => visits[r.restaurant] = (visits[r.restaurant] || 0) + 1);
             data.forEach(r => {
-                const key = r.restaurant;
-                visits[key] = (visits[key] || 0) + 1;
-                ratings[key] = ratings[key] || { sum:0, count:0 };
+                const key = `${r.dish} — ${r.restaurant}`;
+                if (!ratings[key]) ratings[key] = {sum:0, count:0, dish:r.dish, restaurant:r.restaurant};
                 ratings[key].sum += parseInt(r.rating);
                 ratings[key].count += 1;
             });
 
-            const visitsArr = Object.entries(visits).map(([restaurant, count]) => ({ restaurant, count }));
-            visitsArr.sort((a,b) => b.count - a.count);
+            const visitsArr = Object.entries(visits)
+                .map(([restaurant,count]) => ({restaurant,count}))
+                .sort((a,b) => b.count - a.count)
+                .slice(0,3);
 
-            const ratingArr = Object.entries(ratings).map(([restaurant, obj]) => ({
-                restaurant,
-                avg: obj.sum / obj.count
-            }));
-            ratingArr.sort((a,b) => b.avg - a.avg);
+            const ratingArr = Object.values(ratings)
+                .map(r => ({dish:r.dish, restaurant:r.restaurant, avg:r.sum/r.count}))
+                .sort((a,b) => b.avg - a.avg)
+                .slice(0,3);
 
             const topVisitsEl = document.getElementById("topVisits");
             const topRatingsEl = document.getElementById("topRatings");
             topVisitsEl.innerHTML = "";
             topRatingsEl.innerHTML = "";
 
-            visitsArr.slice(0,3).forEach(item => {
+            visitsArr.forEach(item => {
                 const li = document.createElement("li");
                 li.textContent = `${item.restaurant} — ${item.count} wizyt`;
                 topVisitsEl.appendChild(li);
             });
 
-            ratingArr.slice(0,3).forEach(item => {
+            ratingArr.forEach(item => {
                 const li = document.createElement("li");
-                li.textContent = `${item.restaurant} — średnia ocena: ${item.avg.toFixed(2)}`;
+                const stars = "★".repeat(Math.round(item.avg));
+                li.innerHTML = `${item.dish} — ${item.restaurant} — <span class="rating">${stars}</span>`;
                 topRatingsEl.appendChild(li);
             });
         });
