@@ -4,12 +4,14 @@
     margin: 0;
     padding: 0;
 }
+
 html, body {
     height: 100%;
     overflow: hidden;
     background: #1c1c1c;
     color: #fff;
 }
+
 header {
     text-align: center;
     padding: 20px;
@@ -18,12 +20,14 @@ header {
     font-size: 2rem;
     font-weight: bold;
 }
+
 .kontener {
     display: flex;
     height: calc(100vh - 80px);
     gap: 20px;
     padding: 20px;
 }
+
 .sidebar {
     flex: 1 1 20%;
     min-width: 180px;
@@ -35,6 +39,7 @@ header {
     flex-direction: column;
     max-height: 100%;
 }
+
 .glowna {
     flex: 2 1 60%;
     background: #333333;
@@ -45,16 +50,19 @@ header {
     flex-direction: column;
     max-height: 100%;
 }
+
 h2 {
     margin-top: 0;
     color: #ff5722;
 }
+
 form label {
     display: block;
     margin-top: 15px;
     font-weight: 600;
     color: #fff;
 }
+
 form input, form textarea, form select {
     width: 100%;
     padding: 12px;
@@ -65,11 +73,13 @@ form input, form textarea, form select {
     background: #444444;
     color: #fff;
 }
+
 form input:focus, form textarea:focus, form select:focus {
     border-color: #ff5722;
     box-shadow: 0 0 8px rgba(255,87,34,0.5);
     outline: none;
 }
+
 button {
     margin-top: 20px;
     padding: 10px 20px;
@@ -82,21 +92,24 @@ button {
     font-size: 1rem;
     transition: all 0.2s;
 }
+
 button:hover:not(:disabled) {
     background: #e64a19;
     transform: scale(1.05);
 }
+
 button:disabled {
     background: #888;
     cursor: not-allowed;
 }
+
 ul {
     list-style: none;
     padding-left: 0;
     margin-top: 10px;
-    overflow-y: auto;
     flex: 1;
 }
+
 ul li {
     padding: 12px 15px;
     border-radius: 10px;
@@ -106,10 +119,12 @@ ul li {
     transform: translateY(-15px);
     transition: all 0.5s ease, color 0.5s ease, transform 0.2s, box-shadow 0.2s;
 }
+
 ul li.show {
     opacity: 1;
     transform: translateY(0);
 }
+
 .akcje button {
     padding: 5px 10px;
     margin-right: 5px;
@@ -118,14 +133,28 @@ ul li.show {
     cursor: pointer;
     font-size: 0.85rem;
 }
+
 .akcje button:first-child {
     background-color: #ff9800;
     color: #fff;
 }
+
 .akcje button:last-child {
     background-color: #f44336;
     color: #fff;
 }
+
 .kontener > .sidebar:last-child {
     margin-left: auto;
+}
+
+#ostatnie-recenzje {
+    overflow-y: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    padding-right: 5px;
+}
+
+#ostatnie-recenzje::-webkit-scrollbar {
+    display: none;
 }
