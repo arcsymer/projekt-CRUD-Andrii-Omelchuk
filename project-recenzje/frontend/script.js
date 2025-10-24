@@ -1,10 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const API_URL = '/backend/api.php'; // базовый URL API
+
     const formularz = document.getElementById('formularz-recenzji');
     const przycisk = document.getElementById('przycisk-dodaj');
     const ostatnieEl = document.getElementById('ostatnie-recenzje');
     const topRestauracjeEl = document.getElementById('top-restauracje');
     const topDaniaEl = document.getElementById('top-dania');
     const polaObowiazkowe = [formularz.danie, formularz.restauracja, formularz.adres, formularz.data, formularz.ocena];
+
+    // Индикатор состояния
+    const statusEl = document.createElement('div');
+    statusEl.id = 'status';
+    statusEl.style.marginTop = '10px';
+    formularz.appendChild(statusEl);
 
     function sprawdzPola() {
         przycisk.disabled = !polaObowiazkowe.every(p => p.value.trim() !== '');
@@ -15,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function wyslijDane(metoda, id = '', dane = null) {
         try {
-            const url = id ? `../backend/api.php/${id}` : '../backend/api.php';
+            statusEl.textContent = 'Ładowanie...';
+            const url = id ? `${API_URL}/${id}` : API_URL;
             const res = await fetch(url, {
                 method: metoda,
                 headers: { 'Content-Type': 'application/json' },
@@ -23,9 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const json = await res.json();
             if (!res.ok) throw new Error(json.error || 'Błąd serwera');
+            statusEl.textContent = '';
             return json;
         } catch (err) {
-            alert('Błąd: ' + err.message);
+            statusEl.textContent = 'Błąd: ' + err.message;
+            console.error(err);
         }
     }
 
@@ -36,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             restauracja: formularz.restauracja.value,
             adres: formularz.adres.value,
             data: formularz.data.value,
-            ocena: formularz.ocena.value,
+            ocena: parseInt(formularz.ocena.value, 10), // преобразование в int
             komentarz: formularz.komentarz.value
         };
 
@@ -107,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function zaladujDane() {
         try {
             const data = await wyslijDane('GET');
+            if (!data) return;
             const recenzje = Array.isArray(data) ? data : data.ostatnie || [];
             ostatnieEl.innerHTML = '';
 
@@ -151,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } catch (err) {
+            statusEl.textContent = 'Błąd ładowania danych';
             console.error('Błąd ładowania danych:', err);
         }
     }
