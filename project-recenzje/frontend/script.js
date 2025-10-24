@@ -13,17 +13,19 @@ document.addEventListener('DOMContentLoaded', () => {
     polaObowiazkowe.forEach(p => p.addEventListener('input', sprawdzPola));
     formularz.ocena.addEventListener('change', sprawdzPola);
 
-    async function wyslijDane(url, dane) {
+    async function wyslijDane(metoda, id = '', dane = null) {
         try {
+            const url = id ? `../backend/api.php/${id}` : '../backend/api.php';
             const res = await fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify(dane)
+                method: metoda,
+                headers: { 'Content-Type': 'application/json' },
+                body: dane ? JSON.stringify(dane) : null
             });
             const json = await res.json();
-            if(json.status !== 'ok') throw new Error('Błąd serwera');
-        } catch(err) {
-            alert('Błąd: '+err.message);
+            if (!res.ok) throw new Error(json.error || 'Błąd serwera');
+            return json;
+        } catch (err) {
+            alert('Błąd: ' + err.message);
         }
     }
 
@@ -37,25 +39,26 @@ document.addEventListener('DOMContentLoaded', () => {
             ocena: formularz.ocena.value,
             komentarz: formularz.komentarz.value
         };
-        if(przycisk.dataset.editingId){
-            dane.id = przycisk.dataset.editingId;
-            await wyslijDane('update.php', dane);
-            przycisk.dataset.editingId = '';
+
+        if (przycisk.dataset.edytujId) {
+            await wyslijDane('PUT', przycisk.dataset.edytujId, dane);
+            przycisk.dataset.edytujId = '';
             przycisk.textContent = 'Dodaj recenzję';
         } else {
-            await wyslijDane('create.php', dane);
+            await wyslijDane('POST', '', dane);
         }
+
         formularz.reset();
         przycisk.disabled = true;
         zaladujDane();
     });
 
-    function ocenaColor(val){
-        const start=[231,76,60], end=[46,204,113];
-        const t=(parseInt(val)-1)/9;
-        const r=Math.round(start[0]+(end[0]-start[0])*t);
-        const g=Math.round(start[1]+(end[1]-start[1])*t);
-        const b=Math.round(start[2]+(end[2]-start[2])*t);
+    function kolorOceny(val) {
+        const start = [231, 76, 60], end = [46, 204, 113];
+        const t = (parseInt(val) - 1) / 9;
+        const r = Math.round(start[0] + (end[0] - start[0]) * t);
+        const g = Math.round(start[1] + (end[1] - start[1]) * t);
+        const b = Math.round(start[2] + (end[2] - start[2]) * t);
         return `rgb(${r},${g},${b})`;
     }
 
@@ -67,48 +70,47 @@ document.addEventListener('DOMContentLoaded', () => {
         formularz.ocena.value = r.ocena;
         formularz.komentarz.value = r.komentarz;
         przycisk.textContent = 'Aktualizuj recenzję';
-        przycisk.dataset.editingId = r.id;
+        przycisk.dataset.edytujId = r.id;
         sprawdzPola();
-    }
+    };
 
     window.usunRecenzje = async id => {
-        if(confirm('Czy na pewno chcesz usunąć tę recenzję?')){
-            await wyslijDane('delete.php',{id});
+        if (confirm('Czy na pewno chcesz usunąć tę recenzję?')) {
+            await wyslijDane('DELETE', id);
             zaladujDane();
         }
-    }
+    };
 
-    function pokazTopListy(topRestauracje, topDania){
+    function pokazTopListy(topRestauracje, topDania) {
         topRestauracjeEl.innerHTML = '';
-        if(topRestauracje && typeof topRestauracje === 'object'){
-            for(const [name,count] of Object.entries(topRestauracje)){
+        if (topRestauracje && typeof topRestauracje === 'object') {
+            for (const [name, count] of Object.entries(topRestauracje)) {
                 const li = document.createElement('li');
                 li.textContent = `${name} (${count})`;
                 topRestauracjeEl.appendChild(li);
-                requestAnimationFrame(()=>li.classList.add('show'));
+                requestAnimationFrame(() => li.classList.add('show'));
             }
         }
 
         topDaniaEl.innerHTML = '';
-        if(Array.isArray(topDania)){
-            topDania.forEach(d=>{
+        if (Array.isArray(topDania)) {
+            topDania.forEach(d => {
                 const li = document.createElement('li');
                 li.textContent = `${d.danie} - ${d.restauracja} (${d.ocena.toFixed(1)})`;
-                li.style.color = ocenaColor(d.ocena);
+                li.style.color = kolorOceny(d.ocena);
                 topDaniaEl.appendChild(li);
-                requestAnimationFrame(()=>li.classList.add('show'));
+                requestAnimationFrame(() => li.classList.add('show'));
             });
         }
     }
 
-    async function zaladujDane(){
-        try{
-            const res = await fetch('read.php');
-            const data = await res.json();
-            const recenzje = Array.isArray(data.ostatnie) ? data.ostatnie : [];
+    async function zaladujDane() {
+        try {
+            const data = await wyslijDane('GET');
+            const recenzje = Array.isArray(data) ? data : data.ostatnie || [];
             ostatnieEl.innerHTML = '';
 
-            recenzje.forEach(r=>{
+            recenzje.forEach(r => {
                 const li = document.createElement('li');
                 const strong = document.createElement('strong');
                 strong.textContent = `${r.danie} - ${r.restauracja}`;
@@ -117,11 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const info = document.createElement('span');
                 info.textContent = `${r.adres} | ${r.data} | Ocena: ${r.ocena}`;
-                info.style.color = ocenaColor(r.ocena);
+                info.style.color = kolorOceny(r.ocena);
                 li.appendChild(info);
                 li.appendChild(document.createElement('br'));
 
-                if(r.komentarz){
+                if (r.komentarz) {
                     const komentarz = document.createElement('span');
                     komentarz.textContent = r.komentarz;
                     li.appendChild(komentarz);
@@ -131,22 +133,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 const akcjeDiv = document.createElement('div');
                 akcjeDiv.classList.add('akcje');
                 const editBtn = document.createElement('button');
-                editBtn.textContent='Edytuj';
-                editBtn.addEventListener('click',()=>edytujRecenzje(r));
+                editBtn.textContent = 'Edytuj';
+                editBtn.addEventListener('click', () => edytujRecenzje(r));
                 akcjeDiv.appendChild(editBtn);
                 const deleteBtn = document.createElement('button');
-                deleteBtn.textContent='Usuń';
-                deleteBtn.addEventListener('click',()=>usunRecenzje(r.id));
+                deleteBtn.textContent = 'Usuń';
+                deleteBtn.addEventListener('click', () => usunRecenzje(r.id));
                 akcjeDiv.appendChild(deleteBtn);
                 li.appendChild(akcjeDiv);
 
                 ostatnieEl.appendChild(li);
-                requestAnimationFrame(()=>li.classList.add('show'));
+                requestAnimationFrame(() => li.classList.add('show'));
             });
 
-            pokazTopListy(data.topRestauracje, data.topDania);
+            if (data.topRestauracje || data.topDania) {
+                pokazTopListy(data.topRestauracje, data.topDania);
+            }
 
-        } catch(err){
+        } catch (err) {
             console.error('Błąd ładowania danych:', err);
         }
     }
