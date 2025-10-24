@@ -1,137 +1,165 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("reviewForm");
-    const submitBtn = document.getElementById("submitBtn");
-    const fields = ["restaurant","address","date","dish","rating"];
+document.addEventListener('DOMContentLoaded', () => {
+    const formularz = document.getElementById('formularz-recenzji');
+    const przycisk = document.getElementById('przycisk-dodaj');
+    const ostatnieEl = document.getElementById('ostatnie-recenzje');
+    const topRestauracjeEl = document.getElementById('top-restauracje');
+    const topDaniaEl = document.getElementById('top-dania');
+    const polaObowiazkowe = [formularz.danie, formularz.restauracja, formularz.adres, formularz.data, formularz.ocena];
 
-    fields.forEach(id => document.getElementById(id).addEventListener("input", checkForm));
-    document.getElementById("rating").addEventListener("change", checkForm);
-
-    function checkForm() {
-        submitBtn.disabled = !fields.every(id => document.getElementById(id).value.trim() !== "");
+    function sprawdzPola() {
+        przycisk.disabled = !polaObowiazkowe.every(p => p.value.trim() !== '');
     }
 
-    form.addEventListener("submit", e => {
-        e.preventDefault();
-        const review = {
-            id: document.getElementById("reviewId").value,
-            restaurant: document.getElementById("restaurant").value.trim(),
-            address: document.getElementById("address").value.trim(),
-            visit_date: document.getElementById("date").value,
-            dish: document.getElementById("dish").value.trim(),
-            rating: document.getElementById("rating").value,
-            comment: document.getElementById("comment").value.trim()
-        };
-        const url = review.id ? "update.php" : "create.php";
+    polaObowiazkowe.forEach(p => p.addEventListener('input', sprawdzPola));
+    formularz.ocena.addEventListener('change', sprawdzPola);
 
-        fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(review)
-        }).then(() => {
-            form.reset();
-            document.getElementById("reviewId").value = "";
-            submitBtn.disabled = true;
-            loadAll();
-        });
+    async function wyslijDane(url, dane) {
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify(dane)
+            });
+            const json = await res.json();
+            if(json.status !== 'ok') throw new Error('Błąd serwera');
+        } catch(err) {
+            alert('Wystąpił błąd: '+err.message);
+        }
+    }
+
+    formularz.addEventListener('submit', async e => {
+        e.preventDefault();
+        const dane = {
+            danie: formularz.danie.value,
+            restauracja: formularz.restauracja.value,
+            adres: formularz.adres.value,
+            data: formularz.data.value,
+            ocena: formularz.ocena.value,
+            komentarz: formularz.komentarz.value
+        };
+        if(przycisk.dataset.editingId){
+            dane.id = przycisk.dataset.editingId;
+            await wyslijDane('update.php', dane);
+            przycisk.dataset.editingId = '';
+            przycisk.textContent = 'Dodaj recenzję ➕';
+        } else {
+            await wyslijDane('create.php', dane);
+        }
+        formularz.reset();
+        przycisk.disabled = true;
+        zaladujDane();
     });
 
-    loadAll();
+    function ocenaColor(val){
+        const start=[231,76,60], end=[46,204,113];
+        const t=(parseInt(val)-1)/9;
+        const r=Math.round(start[0]+(end[0]-start[0])*t);
+        const g=Math.round(start[1]+(end[1]-start[1])*t);
+        const b=Math.round(start[2]+(end[2]-start[2])*t);
+        return `rgb(${r},${g},${b})`;
+    }
+
+    function ocenaSmiley(ocena){
+        if(ocena<=3) return '😞';
+        if(ocena<=6) return '😐';
+        if(ocena<=8) return '🙂';
+        return '😍';
+    }
+
+    window.edytujRecenzje = r => {
+        formularz.danie.value = r.danie;
+        formularz.restauracja.value = r.restauracja;
+        formularz.adres.value = r.adres;
+        formularz.data.value = r.data;
+        formularz.ocena.value = r.ocena;
+        formularz.komentarz.value = r.komentarz;
+        przycisk.textContent = 'Aktualizuj recenzję ✏️';
+        przycisk.dataset.editingId = r.id;
+        sprawdzPola();
+    }
+
+    window.usunRecenzje = async id => {
+        if(confirm('Czy na pewno chcesz usunąć tę recenzję?')){
+            await wyslijDane('delete.php',{id});
+            zaladujDane();
+        }
+    }
+
+    function pokazTopListy(topRestauracje, topDania){
+        topRestauracjeEl.innerHTML = '';
+        if(topRestauracje && typeof topRestauracje === 'object'){
+            for(const [name,count] of Object.entries(topRestauracje)){
+                const li = document.createElement('li');
+                li.textContent = `${name} (${count})`;
+                topRestauracjeEl.appendChild(li);
+                requestAnimationFrame(()=>li.classList.add('show'));
+            }
+        }
+
+        topDaniaEl.innerHTML = '';
+        if(Array.isArray(topDania)){
+            topDania.forEach(d=>{
+                const li = document.createElement('li');
+                li.textContent = `${d.danie} - ${d.restauracja} (${d.ocena.toFixed(1)}) ${ocenaSmiley(d.ocena)}`;
+                li.style.color = ocenaColor(d.ocena);
+                topDaniaEl.appendChild(li);
+                requestAnimationFrame(()=>li.classList.add('show'));
+            });
+        }
+    }
+
+    async function zaladujDane(){
+        try{
+            const res = await fetch('read.php');
+            const data = await res.json();
+
+            const recenzje = Array.isArray(data.ostatnie) ? data.ostatnie : [];
+            ostatnieEl.innerHTML = '';
+
+            recenzje.forEach(r=>{
+                const li = document.createElement('li');
+
+                const strong = document.createElement('strong');
+                strong.textContent = `${r.danie} - ${r.restauracja}`;
+                li.appendChild(strong);
+                li.appendChild(document.createElement('br'));
+
+                const info = document.createElement('span');
+                info.textContent = `${r.adres} | ${r.data} | Ocena: ${r.ocena} ${ocenaSmiley(r.ocena)}`;
+                info.style.color = ocenaColor(r.ocena);
+                li.appendChild(info);
+                li.appendChild(document.createElement('br'));
+
+                if(r.komentarz){
+                    const komentarz = document.createElement('span');
+                    komentarz.textContent = r.komentarz;
+                    li.appendChild(komentarz);
+                    li.appendChild(document.createElement('br'));
+                }
+
+                const akcjeDiv = document.createElement('div');
+                akcjeDiv.classList.add('akcje');
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Edytuj ✏️';
+                editBtn.addEventListener('click',()=>edytujRecenzje(r));
+                akcjeDiv.appendChild(editBtn);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Usuń ❌';
+                deleteBtn.addEventListener('click',()=>usunRecenzje(r.id));
+                akcjeDiv.appendChild(deleteBtn);
+                li.appendChild(akcjeDiv);
+
+                ostatnieEl.appendChild(li);
+                requestAnimationFrame(()=>li.classList.add('show'));
+            });
+
+            pokazTopListy(data.topRestauracje, data.topDania);
+
+        } catch(err){
+            console.error('Błąd ładowania danych:', err);
+        }
+    }
+
+    sprawdzPola();
+    zaladujDane();
 });
-
-function loadAll() {
-    loadReviews();
-    loadRankings();
-}
-
-function loadReviews() {
-    fetch("read.php")
-        .then(res => res.json())
-        .then(data => {
-            const container = document.getElementById("reviews");
-            container.innerHTML = "";
-            data.forEach(r => {
-                const div = document.createElement("div");
-                div.className = "review";
-                div.innerHTML = `
-                    <div class="info">
-                        <h3>${r.dish} — <span class="rating">${"★".repeat(r.rating)}</span></h3>
-                        <div class="meta">
-                            <strong>Restauracja:</strong> ${r.restaurant}<br>
-                            <strong>Adres:</strong> ${r.address}<br>
-                            <strong>Data wizyty:</strong> ${r.visit_date}
-                        </div>
-                        <button onclick="editReview(${r.id})">Edytuj</button>
-                        <button onclick="deleteReview(${r.id})">Usuń</button>
-                    </div>
-                    <div class="comment">${r.comment}</div>
-                `;
-                container.appendChild(div);
-            });
-        });
-}
-
-function editReview(id) {
-    fetch(`read.php?id=${id}`)
-        .then(res => res.json())
-        .then(data => {
-            const r = data[0];
-            document.getElementById("reviewId").value = r.id;
-            document.getElementById("restaurant").value = r.restaurant;
-            document.getElementById("address").value = r.address;
-            document.getElementById("date").value = r.visit_date;
-            document.getElementById("dish").value = r.dish;
-            document.getElementById("rating").value = r.rating;
-            document.getElementById("comment").value = r.comment;
-            document.getElementById("submitBtn").disabled = false;
-        });
-}
-
-function deleteReview(id) {
-    if (!confirm("Czy na pewno chcesz usunąć tę recenzję?")) return;
-    fetch(`delete.php?id=${id}`).then(() => loadAll());
-}
-
-function loadRankings() {
-    fetch("read.php")
-        .then(res => res.json())
-        .then(data => {
-            const visits = {};
-            const ratings = {};
-
-            data.forEach(r => visits[r.restaurant] = (visits[r.restaurant] || 0) + 1);
-            data.forEach(r => {
-                const key = `${r.dish} — ${r.restaurant}`;
-                if (!ratings[key]) ratings[key] = {sum:0, count:0, dish:r.dish, restaurant:r.restaurant};
-                ratings[key].sum += parseInt(r.rating);
-                ratings[key].count += 1;
-            });
-
-            const visitsArr = Object.entries(visits)
-                .map(([restaurant,count]) => ({restaurant,count}))
-                .sort((a,b) => b.count - a.count)
-                .slice(0,3);
-
-            const ratingArr = Object.values(ratings)
-                .map(r => ({dish:r.dish, restaurant:r.restaurant, avg:r.sum/r.count}))
-                .sort((a,b) => b.avg - a.avg)
-                .slice(0,3);
-
-            const topVisitsEl = document.getElementById("topVisits");
-            const topRatingsEl = document.getElementById("topRatings");
-            topVisitsEl.innerHTML = "";
-            topRatingsEl.innerHTML = "";
-
-            visitsArr.forEach(item => {
-                const li = document.createElement("li");
-                li.textContent = `${item.restaurant} — ${item.count} wizyt`;
-                topVisitsEl.appendChild(li);
-            });
-
-            ratingArr.forEach(item => {
-                const li = document.createElement("li");
-                const stars = "★".repeat(Math.round(item.avg));
-                li.innerHTML = `${item.dish} — ${item.restaurant} — <span class="rating">${stars}</span>`;
-                topRatingsEl.appendChild(li);
-            });
-        });
-}

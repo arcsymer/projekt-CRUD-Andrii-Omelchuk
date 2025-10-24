@@ -1,51 +1,51 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="UTF-8">
-<title>Recenzje dań restauracyjnych</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recenzje dań restauracji 🍽️</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <header>
+        <h1>Recenzje dań restauracji 🍽️</h1>
+    </header>
+    <div class="kontener">
+        <aside class="sidebar">
+            <h2>Najczęściej odwiedzane restauracje ⭐</h2>
+            <ul id="top-restauracje"></ul>
+            <h2>Najwyżej ocenione dania 🏆</h2>
+            <ul id="top-dania"></ul>
+        </aside>
 
-<h1>Recenzje dań</h1>
+        <main class="glowna">
+            <form id="formularz-recenzji">
+                <label for="danie">Nazwa dania 🍲:</label>
+                <input type="text" id="danie" name="danie" required>
+                <label for="restauracja">Nazwa restauracji 🏠:</label>
+                <input type="text" id="restauracja" name="restauracja" required>
+                <label for="adres">Adres restauracji 🗺️:</label>
+                <input type="text" id="adres" name="adres" required>
+                <label for="data">Data wizyty 📅:</label>
+                <input type="date" id="data" name="data" required>
+                <label for="ocena">Ocena (1-10) ⭐:</label>
+                <select id="ocena" name="ocena" required>
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                    <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+                <label for="komentarz">Komentarz (opcjonalnie) 💬:</label>
+                <textarea id="komentarz" name="komentarz"></textarea>
+                <button type="submit" id="przycisk-dodaj">Dodaj recenzję ➕</button>
+            </form>
+        </main>
 
-<form id="reviewForm">
-    <input type="hidden" id="reviewId">
-    <label for="restaurant">Restauracja:</label>
-    <input type="text" id="restaurant" required>
-    <label for="address">Adres:</label>
-    <input type="text" id="address" required>
-    <label for="date">Data wizyty:</label>
-    <input type="date" id="date" required>
-    <label for="dish">Danie:</label>
-    <input type="text" id="dish" required>
-    <label for="rating">Ocena:</label>
-    <select id="rating" required>
-        <option value="">Wybierz ocenę</option>
-        <option value="1">1 – Okropne</option>
-        <option value="2">2 – Słabe</option>
-        <option value="3">3 – Średnie</option>
-        <option value="4">4 – Dobre</option>
-        <option value="5">5 – Doskonałe</option>
-    </select>
-    <label for="comment">Komentarz (opcjonalnie):</label>
-    <textarea id="comment" rows="4"></textarea>
-    <button type="submit" id="submitBtn" disabled>Dodaj recenzję</button>
-</form>
-
-<div class="rankings">
-    <div class="ranking">
-        <h2>Najczęściej odwiedzane restauracje</h2>
-        <ol id="topVisits"></ol>
+        <aside class="sidebar">
+            <h2>Ostatnie recenzje 📝</h2>
+            <ul id="ostatnie-recenzje"></ul>
+        </aside>
     </div>
-    <div class="ranking">
-        <h2>Najwyżej oceniane danie</h2>
-        <ol id="topRatings"></ol>
-    </div>
-</div>
-
-<div id="reviews" class="reviews-right"></div>
-
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
