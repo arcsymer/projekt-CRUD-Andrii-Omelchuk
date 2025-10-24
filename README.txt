@@ -70,12 +70,12 @@ Połączenie frontend ↔ backend
   ../backend/api.php
 
 Endpointy REST API
-  Metoda	Endpoint	             Opis
-  GET	    /backend/api.php	     Pobiera wszystkie recenzje + top-listy
-  GET	    /backend/api.php/{id}	 Pobiera konkretną recenzję
-  POST	  /backend/api.php	     Dodaje nową recenzję
-  PUT	    /backend/api.php/{id}  Aktualizuje istniejącą recenzję
-  DELETE  /backend/api.php/{id}  Usuwa recenzję
+  Metoda	  Endpoint	               Opis
+  GET	      /backend/api.php	       Pobiera wszystkie recenzje + top-listy
+  GET	      /backend/api.php/{id}	   Pobiera konkretną recenzję
+  POST	    /backend/api.php	       Dodaje nową recenzję
+  PUT	      /backend/api.php/{id}    Aktualizuje istniejącą recenzję
+  DELETE    /backend/api.php/{id}    Usuwa recenzję
 
 Walidacja
   Formularz nie pozwala wysłać pustych pól.
