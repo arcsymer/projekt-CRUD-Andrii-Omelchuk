@@ -1,7 +1,6 @@
 Recenzje dań restauracji
-
-Projekt Recenzje dań restauracji to prosta aplikacja webowa umożliwiająca dodawanie, edytowanie, usuwanie oraz przeglądanie recenzji potraw w restauracjach.
-Aplikacja działa w architekturze frontend + backend z pełnym systemem CRUD.
+  Projekt Recenzje dań restauracji to prosta aplikacja webowa umożliwiająca dodawanie, edytowanie, usuwanie oraz przeglądanie recenzji potraw w restauracjach.
+  Aplikacja działa w architekturze frontend + backend z pełnym systemem CRUD.
 
 Struktura projektu
   projekt-recenzje/
@@ -28,7 +27,6 @@ Funkcjonalności
     datą wizyty
     oceną (1–10)
     komentarzem (opcjonalnym)
-
   Edycja i usuwanie istniejących recenzji
   Wyświetlanie ostatnich 10 recenzji
   Top-listy:
@@ -53,16 +51,16 @@ Baza danych
 
 Uruchomienie projektu lokalnie
   Przygotowanie środowiska
-  Upewnij się, że masz:
-    Zainstalowany XAMPP / Laragon / MAMP
-    Uruchomione serwery Apache i MySQL
+    Upewnij się, że masz:
+      Zainstalowany XAMPP / Laragon / MAMP
+      Uruchomione serwery Apache i MySQL
   Utworzenie bazy danych:
     Otwórz phpMyAdmin
     Stwórz nową bazę recenzje_db
     Uruchom powyższe polecenie SQL, aby utworzyć tabelę recenzje
   Umieszczenie plików
-  Skopiuj cały folder projektu do katalogu:
-  ...\xampp\htdocs\projekt-recenzje\
+    Skopiuj cały folder projektu do katalogu:
+    ...\xampp\htdocs\projekt-recenzje\
   Uruchomienie
     Otwórz przeglądarkę i wejdź na:
     http://localhost/projekt-recenzje/frontend/index.html
@@ -70,3 +68,19 @@ Uruchomienie projektu lokalnie
 Połączenie frontend ↔ backend
   Frontend komunikuje się z API poprzez:
   ../backend/api.php
+
+Endpointy REST API
+  Metoda	Endpoint	             Opis
+  GET	    /backend/api.php	     Pobiera wszystkie recenzje + top-listy
+  GET	    /backend/api.php/{id}	 Pobiera konkretną recenzję
+  POST	  /backend/api.php	     Dodaje nową recenzję
+  PUT	    /backend/api.php/{id}  Aktualizuje istniejącą recenzję
+  DELETE  /backend/api.php/{id}  Usuwa recenzję
+
+Walidacja
+  Formularz nie pozwala wysłać pustych pól.
+  Przycisk „Dodaj recenzję” jest aktywny tylko wtedy, gdy wszystkie pola obowiązkowe są wypełnione.
+
+Autor
+  Imię i nazwisko: Andrii Omelchuk
+  Numer studenta: 67349
