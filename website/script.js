@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const json = await res.json();
             if(json.status !== 'ok') throw new Error('Błąd serwera');
         } catch(err) {
-            alert('Wystąpił błąd: '+err.message);
+            alert('Błąd: '+err.message);
         }
     }
 
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dane.id = przycisk.dataset.editingId;
             await wyslijDane('update.php', dane);
             przycisk.dataset.editingId = '';
-            przycisk.textContent = 'Dodaj recenzję ➕';
+            przycisk.textContent = 'Dodaj recenzję';
         } else {
             await wyslijDane('create.php', dane);
         }
@@ -59,13 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return `rgb(${r},${g},${b})`;
     }
 
-    function ocenaSmiley(ocena){
-        if(ocena<=3) return '😞';
-        if(ocena<=6) return '😐';
-        if(ocena<=8) return '🙂';
-        return '😍';
-    }
-
     window.edytujRecenzje = r => {
         formularz.danie.value = r.danie;
         formularz.restauracja.value = r.restauracja;
@@ -73,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formularz.data.value = r.data;
         formularz.ocena.value = r.ocena;
         formularz.komentarz.value = r.komentarz;
-        przycisk.textContent = 'Aktualizuj recenzję ✏️';
+        przycisk.textContent = 'Aktualizuj recenzję';
         przycisk.dataset.editingId = r.id;
         sprawdzPola();
     }
@@ -100,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(Array.isArray(topDania)){
             topDania.forEach(d=>{
                 const li = document.createElement('li');
-                li.textContent = `${d.danie} - ${d.restauracja} (${d.ocena.toFixed(1)}) ${ocenaSmiley(d.ocena)}`;
+                li.textContent = `${d.danie} - ${d.restauracja} (${d.ocena.toFixed(1)})`;
                 li.style.color = ocenaColor(d.ocena);
                 topDaniaEl.appendChild(li);
                 requestAnimationFrame(()=>li.classList.add('show'));
@@ -112,20 +105,18 @@ document.addEventListener('DOMContentLoaded', () => {
         try{
             const res = await fetch('read.php');
             const data = await res.json();
-
             const recenzje = Array.isArray(data.ostatnie) ? data.ostatnie : [];
             ostatnieEl.innerHTML = '';
 
             recenzje.forEach(r=>{
                 const li = document.createElement('li');
-
                 const strong = document.createElement('strong');
                 strong.textContent = `${r.danie} - ${r.restauracja}`;
                 li.appendChild(strong);
                 li.appendChild(document.createElement('br'));
 
                 const info = document.createElement('span');
-                info.textContent = `${r.adres} | ${r.data} | Ocena: ${r.ocena} ${ocenaSmiley(r.ocena)}`;
+                info.textContent = `${r.adres} | ${r.data} | Ocena: ${r.ocena}`;
                 info.style.color = ocenaColor(r.ocena);
                 li.appendChild(info);
                 li.appendChild(document.createElement('br'));
@@ -140,11 +131,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const akcjeDiv = document.createElement('div');
                 akcjeDiv.classList.add('akcje');
                 const editBtn = document.createElement('button');
-                editBtn.textContent = 'Edytuj ✏️';
+                editBtn.textContent='Edytuj';
                 editBtn.addEventListener('click',()=>edytujRecenzje(r));
                 akcjeDiv.appendChild(editBtn);
                 const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Usuń ❌';
+                deleteBtn.textContent='Usuń';
                 deleteBtn.addEventListener('click',()=>usunRecenzje(r.id));
                 akcjeDiv.appendChild(deleteBtn);
                 li.appendChild(akcjeDiv);
