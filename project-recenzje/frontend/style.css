@@ -7,9 +7,9 @@
 
 html, body {
     height: 100%;
-    overflow: hidden;
     background: #1c1c1c;
     color: #fff;
+    overflow-x: hidden;
 }
 
 header {
@@ -23,14 +23,14 @@ header {
 
 .kontener {
     display: flex;
-    height: calc(100vh - 80px);
+    flex-wrap: wrap;
     gap: 20px;
     padding: 20px;
+    min-height: calc(100vh - 80px);
 }
 
 .sidebar {
-    flex: 1 1 20%;
-    min-width: 180px;
+    flex: 1 1 200px;
     background: #2b2b2b;
     padding: 20px;
     border-radius: 20px;
@@ -38,29 +38,28 @@ header {
     display: flex;
     flex-direction: column;
     max-height: 100%;
+    overflow-y: auto;
 }
 
 .glowna {
-    flex: 2 1 60%;
-    background: #333333;
+    flex: 2 1 600px;
+    background: #333;
     padding: 30px;
     border-radius: 25px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
-    max-height: 100%;
 }
 
 h2 {
-    margin-top: 0;
     color: #ff5722;
+    margin-bottom: 10px;
 }
 
 form label {
     display: block;
     margin-top: 15px;
     font-weight: 600;
-    color: #fff;
 }
 
 form input, form textarea, form select {
@@ -70,7 +69,7 @@ form input, form textarea, form select {
     border-radius: 12px;
     border: 1px solid #555;
     font-size: 1rem;
-    background: #444444;
+    background: #444;
     color: #fff;
 }
 
@@ -113,11 +112,11 @@ ul {
 ul li {
     padding: 12px 15px;
     border-radius: 10px;
-    background: #444444;
+    background: #444;
     margin-bottom: 10px;
     opacity: 0;
     transform: translateY(-15px);
-    transition: all 0.5s ease, color 0.5s ease, transform 0.2s, box-shadow 0.2s;
+    transition: all 0.5s ease, color 0.5s ease;
 }
 
 ul li.show {
@@ -134,27 +133,14 @@ ul li.show {
     font-size: 0.85rem;
 }
 
-.akcje button:first-child {
-    background-color: #ff9800;
-    color: #fff;
-}
-
-.akcje button:last-child {
-    background-color: #f44336;
-    color: #fff;
-}
-
-.kontener > .sidebar:last-child {
-    margin-left: auto;
-}
+.akcje button:first-child { background-color: #ff9800; color: #fff; }
+.akcje button:last-child { background-color: #f44336; color: #fff; }
 
 #ostatnie-recenzje {
-    overflow-y: scroll;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    padding-right: 5px;
+    overflow-y: auto;
 }
 
-#ostatnie-recenzje::-webkit-scrollbar {
-    display: none;
+@media (max-width: 900px) {
+    .kontener { flex-direction: column; }
+    .glowna, .sidebar { max-height: none; }
 }

@@ -7,45 +7,50 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Recenzje dań restauracji</h1>
-    </header>
-    <div class="kontener">
-        <aside class="sidebar">
-            <h2>Najczęściej odwiedzane restauracje</h2>
-            <ul id="top-restauracje"></ul>
-            <h2>Najwyżej ocenione dania</h2>
-            <ul id="top-dania"></ul>
-        </aside>
+<header>
+    <h1>Recenzje dań restauracji</h1>
+</header>
 
-        <main class="glowna">
-            <form id="formularz-recenzji">
-                <label for="danie">Nazwa dania:</label>
-                <input type="text" id="danie" name="danie" required>
-                <label for="restauracja">Nazwa restauracji:</label>
-                <input type="text" id="restauracja" name="restauracja" required>
-                <label for="adres">Adres restauracji:</label>
-                <input type="text" id="adres" name="adres" required>
-                <label for="data">Data wizyty:</label>
-                <input type="date" id="data" name="data" required>
-                <label for="ocena">Ocena (1-10):</label>
-                <select id="ocena" name="ocena" required>
-                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-                    <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-                    <option value="10">10</option>
-                </select>
-                <label for="komentarz">Komentarz (opcjonalnie):</label>
-                <textarea id="komentarz" name="komentarz"></textarea>
-                <button type="submit" id="przycisk-dodaj">Dodaj recenzję</button>
-            </form>
-        </main>
+<div class="kontener">
+    <aside class="sidebar">
+        <h2>Najczęściej odwiedzane restauracje</h2>
+        <ul id="top-restauracje"></ul>
 
-        <aside class="sidebar">
-            <h2>Ostatnie recenzje</h2>
-            <ul id="ostatnie-recenzje"></ul>
-        </aside>
-    </div>
-    <script src="script.js"></script>
+        <h2>Najwyżej ocenione dania</h2>
+        <ul id="top-dania"></ul>
+    </aside>
+
+    <main class="glowna">
+        <form id="formularz-recenzji">
+            <label for="danie">Nazwa dania:</label>
+            <input type="text" id="danie" name="danie" required>
+
+            <label for="restauracja">Nazwa restauracji:</label>
+            <input type="text" id="restauracja" name="restauracja" required>
+
+            <label for="adres">Adres restauracji:</label>
+            <input type="text" id="adres" name="adres" required>
+
+            <label for="data">Data wizyty:</label>
+            <input type="date" id="data" name="data" required>
+
+            <label for="ocena">Ocena (1-10):</label>
+            <select id="ocena" name="ocena" required></select>
+
+            <label for="komentarz">Komentarz (opcjonalnie):</label>
+            <textarea id="komentarz" name="komentarz"></textarea>
+
+            <button type="submit" id="przycisk-dodaj" disabled>Dodaj recenzję</button>
+            <div id="status"></div>
+        </form>
+    </main>
+
+    <aside class="sidebar">
+        <h2>Ostatnie recenzje</h2>
+        <ul id="ostatnie-recenzje"></ul>
+    </aside>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>

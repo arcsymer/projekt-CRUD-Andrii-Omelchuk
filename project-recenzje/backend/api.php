@@ -1,6 +1,7 @@
 <?php
+ob_start();
 include 'db.php';
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 $metoda = $_SERVER['REQUEST_METHOD'];
 $sciezka = explode('/', trim($_SERVER['PATH_INFO'] ?? '', '/'));
@@ -8,8 +9,12 @@ $id = $sciezka[0] ?? null;
 
 function odpowiedz($dane, $kod = 200) {
     http_response_code($kod);
-    echo json_encode($dane);
+    echo json_encode($dane, JSON_UNESCAPED_UNICODE);
     exit;
+}
+
+function filtruj($val) {
+    return htmlspecialchars(trim($val), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
 switch($metoda) {
@@ -24,39 +29,34 @@ switch($metoda) {
             $topRestauracje = $pdo->query("SELECT restauracja, COUNT(*) AS liczba FROM recenzje GROUP BY restauracja ORDER BY liczba DESC LIMIT 3")->fetchAll(PDO::FETCH_KEY_PAIR);
             $topDania = $pdo->query("SELECT danie, restauracja, ROUND(AVG(ocena),1) AS ocena FROM recenzje GROUP BY danie, restauracja ORDER BY ocena DESC LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
 
-            $topDania = array_map(function($d){
-                $d['ocena'] = (float)$d['ocena'];
-                return $d;
-            }, $topDania);
+            foreach($topDania as &$d) $d['ocena'] = (float)$d['ocena'];
 
             odpowiedz([
-                'ostatnie' => $ostatnie,
-                'topRestauracje' => $topRestauracje,
-                'topDania' => $topDania
+                'ostatnie'=>$ostatnie,
+                'topRestauracje'=>$topRestauracje,
+                'topDania'=>$topDania
             ]);
         }
         break;
 
     case 'POST':
         $dane = json_decode(file_get_contents('php://input'), true);
-        if (!$dane || empty($dane['danie']) || empty($dane['restauracja']) || empty($dane['adres']) || empty($dane['data']) || empty($dane['ocena'])) {
+        if(!$dane || empty($dane['danie']) || empty($dane['restauracja']) || empty($dane['adres']) || empty($dane['data']) || empty($dane['ocena'])) {
             odpowiedz(['error'=>'Niepoprawne dane'], 400);
         }
-
         $stmt = $pdo->prepare("INSERT INTO recenzje (danie, restauracja, adres, data, ocena, komentarz) VALUES (?,?,?,?,?,?)");
-        $stmt->execute([$dane['danie'], $dane['restauracja'], $dane['adres'], $dane['data'], $dane['ocena'], $dane['komentarz'] ?? null]);
+        $stmt->execute([filtruj($dane['danie']), filtruj($dane['restauracja']), filtruj($dane['adres']), $dane['data'], $dane['ocena'], isset($dane['komentarz'])?filtruj($dane['komentarz']):null]);
         odpowiedz(['status'=>'ok','id'=>$pdo->lastInsertId()], 201);
         break;
 
     case 'PUT':
         if(!$id) odpowiedz(['error'=>'ID wymagane'], 400);
         $dane = json_decode(file_get_contents('php://input'), true);
-        if (!$dane || empty($dane['danie']) || empty($dane['restauracja']) || empty($dane['adres']) || empty($dane['data']) || empty($dane['ocena'])) {
+        if(!$dane || empty($dane['danie']) || empty($dane['restauracja']) || empty($dane['adres']) || empty($dane['data']) || empty($dane['ocena'])) {
             odpowiedz(['error'=>'Niepoprawne dane'], 400);
         }
-
         $stmt = $pdo->prepare("UPDATE recenzje SET danie=?, restauracja=?, adres=?, data=?, ocena=?, komentarz=? WHERE id=?");
-        $stmt->execute([$dane['danie'], $dane['restauracja'], $dane['adres'], $dane['data'], $dane['ocena'], $dane['komentarz'], $id]);
+        $stmt->execute([filtruj($dane['danie']), filtruj($dane['restauracja']), filtruj($dane['adres']), $dane['data'], $dane['ocena'], isset($dane['komentarz'])?filtruj($dane['komentarz']):null, $id]);
         odpowiedz(['status'=>'ok']);
         break;
 
@@ -70,4 +70,3 @@ switch($metoda) {
     default:
         odpowiedz(['error'=>'Metoda nieobsługiwana'], 405);
 }
-?>

@@ -1,18 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_URL = '/backend/api.php'; // базовый URL API
+    const API_URL = '../backend/api.php';
 
     const formularz = document.getElementById('formularz-recenzji');
     const przycisk = document.getElementById('przycisk-dodaj');
     const ostatnieEl = document.getElementById('ostatnie-recenzje');
     const topRestauracjeEl = document.getElementById('top-restauracje');
     const topDaniaEl = document.getElementById('top-dania');
-    const polaObowiazkowe = [formularz.danie, formularz.restauracja, formularz.adres, formularz.data, formularz.ocena];
+    const statusEl = document.getElementById('status');
+    const selectOcena = document.getElementById('ocena');
 
-    // Индикатор состояния
-    const statusEl = document.createElement('div');
-    statusEl.id = 'status';
-    statusEl.style.marginTop = '10px';
-    formularz.appendChild(statusEl);
+    // Заполняем select 1-10
+    for(let i=1;i<=10;i++){
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        selectOcena.appendChild(opt);
+    }
+
+    const polaObowiazkowe = [formularz.danie, formularz.restauracja, formularz.adres, formularz.data, formularz.ocena];
 
     function sprawdzPola() {
         przycisk.disabled = !polaObowiazkowe.every(p => p.value.trim() !== '');
@@ -43,12 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
     formularz.addEventListener('submit', async e => {
         e.preventDefault();
         const dane = {
-            danie: formularz.danie.value,
-            restauracja: formularz.restauracja.value,
-            adres: formularz.adres.value,
+            danie: formularz.danie.value.trim(),
+            restauracja: formularz.restauracja.value.trim(),
+            adres: formularz.adres.value.trim(),
             data: formularz.data.value,
-            ocena: parseInt(formularz.ocena.value, 10), // преобразование в int
-            komentarz: formularz.komentarz.value
+            ocena: parseInt(formularz.ocena.value, 10),
+            komentarz: formularz.komentarz.value.trim() || null
         };
 
         if (przycisk.dataset.edytujId) {
@@ -66,11 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function kolorOceny(val) {
         const start = [231, 76, 60], end = [46, 204, 113];
-        const t = (parseInt(val) - 1) / 9;
-        const r = Math.round(start[0] + (end[0] - start[0]) * t);
-        const g = Math.round(start[1] + (end[1] - start[1]) * t);
-        const b = Math.round(start[2] + (end[2] - start[2]) * t);
-        return `rgb(${r},${g},${b})`;
+        const t = (val-1)/9;
+        return `rgb(${Math.round(start[0]+(end[0]-start[0])*t)},${Math.round(start[1]+(end[1]-start[1])*t)},${Math.round(start[2]+(end[2]-start[2])*t)})`;
     }
 
     window.edytujRecenzje = r => {
@@ -79,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formularz.adres.value = r.adres;
         formularz.data.value = r.data;
         formularz.ocena.value = r.ocena;
-        formularz.komentarz.value = r.komentarz;
+        formularz.komentarz.value = r.komentarz || '';
         przycisk.textContent = 'Aktualizuj recenzję';
         przycisk.dataset.edytujId = r.id;
         sprawdzPola();
@@ -94,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function pokazTopListy(topRestauracje, topDania) {
         topRestauracjeEl.innerHTML = '';
-        if (topRestauracje && typeof topRestauracje === 'object') {
+        if (topRestauracje) {
             for (const [name, count] of Object.entries(topRestauracje)) {
                 const li = document.createElement('li');
                 li.textContent = `${name} (${count})`;
@@ -104,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         topDaniaEl.innerHTML = '';
-        if (Array.isArray(topDania)) {
+        if (topDania) {
             topDania.forEach(d => {
                 const li = document.createElement('li');
                 li.textContent = `${d.danie} - ${d.restauracja} (${d.ocena.toFixed(1)})`;
@@ -119,10 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const data = await wyslijDane('GET');
             if (!data) return;
-            const recenzje = Array.isArray(data) ? data : data.ostatnie || [];
-            ostatnieEl.innerHTML = '';
 
-            recenzje.forEach(r => {
+            ostatnieEl.innerHTML = '';
+            data.ostatnie.forEach(r => {
                 const li = document.createElement('li');
                 const strong = document.createElement('strong');
                 strong.textContent = `${r.danie} - ${r.restauracja}`;
@@ -136,35 +137,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.appendChild(document.createElement('br'));
 
                 if (r.komentarz) {
-                    const komentarz = document.createElement('span');
-                    komentarz.textContent = r.komentarz;
-                    li.appendChild(komentarz);
+                    const kom = document.createElement('span');
+                    kom.textContent = r.komentarz;
+                    li.appendChild(kom);
                     li.appendChild(document.createElement('br'));
                 }
 
-                const akcjeDiv = document.createElement('div');
-                akcjeDiv.classList.add('akcje');
+                const akcje = document.createElement('div');
+                akcje.classList.add('akcje');
+
                 const editBtn = document.createElement('button');
                 editBtn.textContent = 'Edytuj';
                 editBtn.addEventListener('click', () => edytujRecenzje(r));
-                akcjeDiv.appendChild(editBtn);
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Usuń';
-                deleteBtn.addEventListener('click', () => usunRecenzje(r.id));
-                akcjeDiv.appendChild(deleteBtn);
-                li.appendChild(akcjeDiv);
+                akcje.appendChild(editBtn);
+
+                const delBtn = document.createElement('button');
+                delBtn.textContent = 'Usuń';
+                delBtn.addEventListener('click', () => usunRecenzje(r.id));
+                akcje.appendChild(delBtn);
+
+                li.appendChild(akcje);
 
                 ostatnieEl.appendChild(li);
                 requestAnimationFrame(() => li.classList.add('show'));
             });
 
-            if (data.topRestauracje || data.topDania) {
-                pokazTopListy(data.topRestauracje, data.topDania);
-            }
+            pokazTopListy(data.topRestauracje, data.topDania);
 
         } catch (err) {
             statusEl.textContent = 'Błąd ładowania danych';
-            console.error('Błąd ładowania danych:', err);
+            console.error(err);
         }
     }
 
