@@ -1,8 +1,8 @@
 <?php
-$host='localhost';
-$db='recenzje_db';
-$user='root';
-$pass='';
+$host='fdb1034.awardspace.net';
+$db='4698990_recenzjedanrestauracji';
+$user='4698990_recenzjedanrestauracji';
+$pass='Vistula67349AndriiOmelchuk';
 $charset='utf8mb4';
 
 $dsn="mysql:host=$host;dbname=$db;charset=$charset";
