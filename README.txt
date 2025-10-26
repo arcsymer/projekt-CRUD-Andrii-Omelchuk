@@ -12,7 +12,8 @@ Struktura projektu
   │
   └── backend/
       ├── db.php
-      └── api.php
+      ├── api.php
+      └── status.php
 
 Technologie
   Frontend: HTML5, CSS3, JavaScript (czysty JS, dynamiczne ładowanie danych)
