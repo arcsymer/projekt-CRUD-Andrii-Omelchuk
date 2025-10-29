@@ -6,10 +6,10 @@
 }
 
 html, body {
-    height: 100%;
+    height: 100vh;
     background: #1c1c1c;
     color: #fff;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 header {
@@ -38,7 +38,7 @@ header {
     display: flex;
     flex-direction: column;
     max-height: 100%;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .glowna {
@@ -49,6 +49,7 @@ header {
     box-shadow: 0 8px 20px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 h2 {
@@ -137,7 +138,13 @@ ul li.show {
 .akcje button:last-child { background-color: #f44336; color: #fff; }
 
 #ostatnie-recenzje {
-    overflow-y: auto;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#ostatnie-recenzje::-webkit-scrollbar {
+    display: none;
 }
 
 @media (max-width: 900px) {
