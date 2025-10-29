@@ -66,6 +66,9 @@ Uruchomienie projektu lokalnie
     Otwórz przeglądarkę i wejdź na:
     http://localhost/projekt-recenzje/frontend/index.html
 
+Uruchomienie projektu w internecie
+  http://recenzjedanrestauracji.atwebpages.com/frontend/index.html
+
 Połączenie frontend ↔ backend
   Frontend komunikuje się z API poprzez:
   ../backend/api.php
