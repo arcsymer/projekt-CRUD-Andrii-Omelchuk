@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>FoodReview</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="particles-js"></div>
+
+<header class="site-header">
+<nav class="nav">
+<a href="index.html" class="active">Strona główna</a>
+<a href="loginreg.html">Logowanie / Rejestracja</a>
+<a href="reviewadd.html">Dodaj recenzję</a>
+<a href="tops.html">Top listy</a>
+<a href="profile.html">Profil</a>
+</nav>
+</header>
+
+<div class="container two-col centered">
+  <div class="left big">
+    <div class="top-pair">
+      <div class="card">
+        <h2>Najczęściej odwiedzane restauracje</h2>
+        <ul id="topRestaurants"></ul>
+      </div>
+      <div class="card">
+        <h2>Najwyżej ocenione dania</h2>
+        <ul id="topDishes"></ul>
+      </div>
+    </div>
+  </div>
+  <div class="right card">
+    <h1>FoodReview</h1>
+    <p>FoodReview to aplikacja stworzona dla miłośników jedzenia i dobrych restauracji. Możesz tu dodawać własne recenzje potraw, oceniać miejsca, poznawać opinie innych użytkowników oraz przeglądać listy najlepszych restauracji i dań w Polsce.</p>
+    <p>Załóż konto, zaloguj się i podziel się swoimi kulinarnymi doświadczeniami!</p>
+  </div>
+</div>
+
+<script src="particles.js"></script>
+<script src="script.js"></script>
+<script>
+  particlesJS.load('particles-js','particles.json', function(){ console.log('Particles loaded'); });
+</script>
+</body>
+</html>

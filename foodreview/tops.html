@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Top listy</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="particles-js"></div>
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html">Strona główna</a>
+    <a href="loginreg.html">Logowanie / Rejestracja</a>
+    <a href="reviewadd.html">Dodaj recenzję</a>
+    <a href="tops.html" class="active">Top listy</a>
+    <a href="profile.html">Profil</a>
+  </nav>
+</header>
+
+<div class="container three-col tops-layout">
+  <div class="left big large-top">
+    <div class="card">
+      <h2>Najczęściej odwiedzane restauracje</h2>
+      <ul id="topRestaurantsList"></ul>
+    </div>
+  </div>
+  <div class="center big large-top">
+    <div class="card">
+      <h2>Najwyżej ocenione dania</h2>
+      <ul id="topDishesList"></ul>
+    </div>
+  </div>
+  <div class="right">
+    <div class="card search-bar">
+      <h2>Szukaj po daniu lub restauracji</h2>
+      <input type="text" id="searchInput" placeholder="Szukaj">
+      <ul id="searchResults"></ul>
+    </div>
+  </div>
+</div>
+
+<script src="particles.js"></script>
+<script src="script.js"></script>
+<script>
+  particlesJS.load('particles-js','particles.json');
+</script>
+</body>
+</html>
