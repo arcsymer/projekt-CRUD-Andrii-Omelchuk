@@ -18,34 +18,34 @@
 </header>
 
 <div class="container two-col centered review-layout">
-<div class="left big">
-<div class="card">
-<h2>Dodaj recenzję</h2>
-<form id="reviewForm">
-<input type="text" name="nazwa_dania" placeholder="Nazwa dania" required>
-<input type="text" name="nazwa_restauracji" placeholder="Nazwa restauracji" required>
-<input type="text" name="adres_restauracji" placeholder="Adres restauracji" required>
-<input type="date" name="data_wizyty" required>
-<input type="number" name="ocena" placeholder="Ocena (1-10)" min="1" max="10" required>
-<input type="text" name="rekomendacja" placeholder="Rekomendacja" required>
-<input type="text" name="z_czym_spozywac" placeholder="Z czym spożywać (opcjonalnie)">
-<textarea name="komentarz" placeholder="Komentarz (opcjonalnie)"></textarea>
-<button type="submit">Dodaj recenzję</button>
-</form>
-<div class="msg" id="reviewMsg"></div>
-</div>
-</div>
+  <div class="left big">
+    <div class="card">
+      <h2>Dodaj recenzję</h2>
+      <form id="reviewForm">
+        <input type="text" name="nazwa_dania" placeholder="Nazwa dania" required>
+        <input type="text" name="nazwa_restauracji" placeholder="Nazwa restauracji" required>
+        <input type="text" name="adres_restauracji" placeholder="Adres restauracji" required>
+        <input type="date" name="data_wizyty" required>
+        <input type="number" name="ocena" placeholder="Ocena (1-10)" min="1" max="10" required>
+        <input type="text" name="rekomendacja" placeholder="Rekomendacja" required>
+        <input type="text" name="z_czym_spozywac" placeholder="Z czym spożywać (opcjonalnie)">
+        <textarea name="komentarz" placeholder="Komentarz (opcjonalnie)"></textarea>
+        <button type="submit">Dodaj recenzję</button>
+      </form>
+      <div class="msg" id="reviewMsg"></div>
+    </div>
+  </div>
 
-<div class="right card">
-<h2>Ostatnie recenzje</h2>
-<ul class="review-list" id="latestReviews"></ul>
-</div>
+  <div class="right card">
+    <h2>Ostatnie recenzje</h2>
+    <ul class="review-list" id="latestReviews"></ul>
+  </div>
 </div>
 
 <script src="particles.js"></script>
 <script src="script.js"></script>
 <script>
-  particlesJS.load('particles-js','particles.json');
+  particlesJS.load('particles-js','particles.json', function(){ console.log('Particles loaded'); });
 </script>
 </body>
 </html>

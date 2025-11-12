@@ -1,18 +1,23 @@
 <?php
 session_start();
 header('Content-Type: application/json');
+
 $conn = new mysqli("fdb1034.awardspace.net", "4698990_foodreview", "Vistula67349AndriiOmelchuk", "4698990_foodreview");
+$conn->set_charset("utf8mb4");
+
 if ($conn->connect_error) {
-    die(json_encode(["error" => "Błąd połączenia z bazą danych"]));
+    die(json_encode(["error" => "Błąd połączenia z bazą danych: ".$conn->connect_error]));
 }
 
 $action = $_GET['action'] ?? '';
 
 switch ($action) {
+
     case 'login':
         $data = json_decode(file_get_contents("php://input"), true);
         $user = $conn->real_escape_string($data['nazwa_uzytkownika']);
         $pass = $data['haslo'];
+
         $res = $conn->query("SELECT * FROM users WHERE nazwa_uzytkownika='$user'");
         if ($res->num_rows) {
             $row = $res->fetch_assoc();
@@ -27,18 +32,47 @@ switch ($action) {
         $data = json_decode(file_get_contents("php://input"), true);
         $user = $conn->real_escape_string($data['nazwa_uzytkownika']);
         $pass = password_hash($data['haslo'], PASSWORD_BCRYPT);
+
         $res = $conn->query("INSERT INTO users (nazwa_uzytkownika, haslo) VALUES ('$user','$pass')");
         if ($res) echo json_encode(["success"=>true]);
         else echo json_encode(["success"=>false,"msg"=>"Użytkownik już istnieje"]);
         break;
 
     case 'addReview':
-        if (!isset($_SESSION['user_id'])) { echo json_encode(["success"=>false,"msg"=>"Nie zalogowany"]); exit; }
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(["success"=>false,"msg"=>"Nie zalogowany"]);
+            exit;
+        }
         $data = json_decode(file_get_contents("php://input"), true);
-        $stmt = $conn->prepare("INSERT INTO reviews (user_id,nazwa_dania,nazwa_restauracji,adres_restauracji,data_wizyty,ocena,rekomendacja,z_czym_spozywac,komentarz) VALUES (?,?,?,?,?,?,?,?,?)");
-        $stmt->bind_param("issssisiss", $_SESSION['user_id'], $data['nazwa_dania'], $data['nazwa_restauracji'], $data['adres_restauracji'], $data['data_wizyty'], $data['ocena'], $data['rekomendacja'], $data['z_czym_spozywac'], $data['komentarz']);
-        if ($stmt->execute()) echo json_encode(["success"=>true]);
-        else echo json_encode(["success"=>false,"msg"=>"Błąd dodawania recenzji"]);
+
+        $stmt = $conn->prepare("INSERT INTO reviews 
+            (user_id, nazwa_dania, nazwa_restauracji, adres_restauracji, data_wizyty, ocena, rekomendacja, z_czym_spozywac, komentarz) 
+            VALUES (?,?,?,?,?,?,?,?,?)");
+
+        if (!$stmt) {
+            echo json_encode(["success"=>false,"msg"=>"Błąd przygotowania zapytania: ".$conn->error]);
+            exit;
+        }
+
+        $stmt->bind_param(
+            "issssisss",
+            $_SESSION['user_id'],
+            $data['nazwa_dania'],
+            $data['nazwa_restauracji'],
+            $data['adres_restauracji'],
+            $data['data_wizyty'],
+            $data['ocena'],
+            $data['rekomendacja'],
+            $data['z_czym_spozywac'],
+            $data['komentarz']
+        );
+
+        if ($stmt->execute()) {
+            echo json_encode(["success"=>true]);
+        } else {
+            echo json_encode(["success"=>false,"msg"=>"Błąd dodawania recenzji: ".$stmt->error]);
+        }
+        $stmt->close();
         break;
 
     case 'topRestaurants':
@@ -111,5 +145,6 @@ switch ($action) {
     default:
         echo json_encode(["error"=>"Nieznana akcja"]);
 }
+
 $conn->close();
 ?>

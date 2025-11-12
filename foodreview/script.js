@@ -63,41 +63,52 @@ document.addEventListener("DOMContentLoaded", () => {
   const reviewMsg = document.getElementById("reviewMsg");
   const latestReviews = document.getElementById("latestReviews");
 
-  if(reviewForm){
+  if (reviewForm) {
     fetch("api.php?action=profile")
-      .then(res=>res.json())
-      .then(data=>{
-        if(data.success===false) window.location.href="loginreg.html";
+      .then(res => res.json())
+      .then(data => {
+        if (data.success === false) {
+          window.location.href = "loginreg.html";
+        }
       });
 
-    function loadLatest(){
+    function loadLatest() {
       fetch("api.php?action=latestReviews")
-        .then(res=>res.json())
-        .then(data=>{
-          latestReviews.innerHTML="";
-          data.forEach(r=>{
-            const li=document.createElement("li");
-            li.textContent=`${r.nazwa_dania} - ${r.nazwa_restauracji} (${r.ocena}/10) przez ${r.nazwa_uzytkownika}`;
+        .then(res => res.json())
+        .then(data => {
+          latestReviews.innerHTML = "";
+          data.forEach(r => {
+            const li = document.createElement("li");
+            li.textContent = `${r.nazwa_dania} - ${r.nazwa_restauracji} (${r.ocena}/10) przez ${r.nazwa_uzytkownika}`;
             latestReviews.appendChild(li);
           });
         });
     }
+
     loadLatest();
 
-    reviewForm.addEventListener("submit", e=>{
+    reviewForm.addEventListener("submit", e => {
       e.preventDefault();
-      const formData=Object.fromEntries(new FormData(reviewForm).entries());
-      fetch("api.php?action=addReview",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
+      const formData = Object.fromEntries(new FormData(reviewForm).entries());
+
+      fetch("api.php?action=addReview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
-      }).then(res=>res.json())
-      .then(r=>{
-        if(r.success){
-          reviewMsg.textContent="Recenzja dodana!";
+      })
+      .then(res => res.json())
+      .then(r => {
+        if (r.success) {
+          reviewMsg.textContent = "Recenzja dodana!";
           reviewForm.reset();
           loadLatest();
-        } else reviewMsg.textContent=r.msg||"Błąd dodawania recenzji";
+        } else {
+          reviewMsg.textContent = r.msg || "Błąd dodawania recenzji";
+        }
+      })
+      .catch(err => {
+        reviewMsg.textContent = "Błąd sieci lub serwera";
+        console.error(err);
       });
     });
   }
