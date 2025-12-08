@@ -17,7 +17,7 @@ jobs:
       run: find . -name "*.php" -exec php -l {} \;
 
     - name: Deploy via SFTP
-      uses: SamKirkland/FTP-Deploy-Action@4.5.0
+      uses: SamKirkland/FTP-Deploy-Action@4
       with:
         server: ${{ secrets.FTP_HOST }}
         username: ${{ secrets.FTP_USERNAME }}
