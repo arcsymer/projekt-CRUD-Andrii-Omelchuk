@@ -1,4 +1,4 @@
-name: CI/CD Deploy
+name: CI/CD Deploy (AwardSpace)
 
 on:
   push:
@@ -6,24 +6,38 @@ on:
       - main
 
 jobs:
-  deploy:
+  validate:
+    name: Validate PHP
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Validate PHP syntax
-      run: find . -name "*.php" -exec php -l {} \;
+      - name: Validate PHP syntax
+        run: find . -name "*.php" -exec php -l {} \;
 
-    - name: Deploy via SFTP
-      uses: SamKirkland/FTP-Deploy-Action@4.4.0
-      with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        port: ${{ secrets.FTP_PORT }}
-        local-dir: ./
-        server-dir: /public_html/
-        passive: true
-        dry-run: false
+  deploy:
+    name: Deploy via SFTP
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SFTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: sftp
+          local-dir: ./
+          server-dir: /public_html/
+          passive: true
+          log-level: verbose
+          exclude: |
+            .git*
+            .github
+            *.yml
+            tests
