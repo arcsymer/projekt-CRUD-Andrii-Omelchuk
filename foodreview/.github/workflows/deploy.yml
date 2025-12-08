@@ -17,13 +17,13 @@ jobs:
       run: find . -name "*.php" -exec php -l {} \;
 
     - name: Deploy via SFTP
-      uses: SamKirkland/FTP-Deploy-Action@4.4.0
+      uses: SamKirkland/FTP-Deploy-Action@v4
       with:
         server: ${{ secrets.FTP_HOST }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         port: ${{ secrets.FTP_PORT }}
         local-dir: ./
-        server-dir: /public_html/
+        server-dir: /public_html/ 
         passive: true
         dry-run: false
