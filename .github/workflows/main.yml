@@ -17,7 +17,7 @@ jobs:
         run: |
           echo "Checking PHP syntax in all files..."
           ERRORS=0
-          for file in $(find $GITHUB_WORKSPACE/foodreviews -name "*.php"); do
+          for file in $(find $GITHUB_WORKSPACE/foodreview -name "*.php"); do
             php -l "$file"
             if [ $? -ne 0 ]; then
               ERRORS=$((ERRORS+1))
@@ -41,31 +41,26 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install stylelint and eslint
-        run: |
-          cd $GITHUB_WORKSPACE/foodreviews
-          npm init -y
-          npm install stylelint stylelint-config-standard eslint eslint-config-standard --save-dev
-
       - name: Lint CSS
         run: |
-          cd $GITHUB_WORKSPACE/foodreviews
+          cd $GITHUB_WORKSPACE/foodreview
+          npm init -y
+          npm install stylelint stylelint-config-standard --save-dev
           set +e
           npx stylelint "**/*.css" --allow-empty-input
-          STYLE_ERRORS=$?
-          if [ $STYLE_ERRORS -ne 0 ]; then
-            echo "::warning ::CSS lint errors detected ($STYLE_ERRORS)"
+          if [ $? -ne 0 ]; then
+            echo "::warning ::CSS lint errors detected"
           fi
           set -e
 
       - name: Lint JS
         run: |
-          cd $GITHUB_WORKSPACE/foodreviews
+          cd $GITHUB_WORKSPACE/foodreview
+          npm install eslint eslint-config-standard --save-dev
           set +e
           npx eslint "**/*.js"
-          JS_ERRORS=$?
-          if [ $JS_ERRORS -ne 0 ]; then
-            echo "::warning ::JS lint errors detected ($JS_ERRORS)"
+          if [ $? -ne 0 ]; then
+            echo "::warning ::JS lint errors detected"
           fi
           set -e
 
@@ -85,13 +80,12 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
           protocol: ftp
-          local-dir: $GITHUB_WORKSPACE/foodreviews
+          local-dir: $GITHUB_WORKSPACE/foodreview
           server-dir: /public_html/
           log-level: verbose
           exclude: |
             .github
             *.yml
-            tests
             .git
           dry-run: false
           state-name: ftp-deploy-state
