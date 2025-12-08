@@ -1,5 +1,30 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const navDiv = document.getElementById('nav-buttons');
+	
+	async function loadWeather() {
+    const weatherDiv = document.getElementById('weather');
+    const apiKey = 'fd66f06221a276aa0235b98f0e57797d'; // <- сюда вставьте свой ключ
+    const city = 'Warsaw';
+    const units = 'metric';
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${units}&lang=pl&appid=${apiKey}`;
+
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Błąd sieci');
+        const data = await res.json();
+        const temp = data.main.temp.toFixed(1);
+        const desc = data.weather[0].description;
+        const icon = data.weather[0].icon;
+
+        weatherDiv.innerHTML = `
+            Pogoda w Warszawie: ${temp}°C, ${desc} 
+            <img src="https://openweathermap.org/img/wn/${icon}.png" alt="${desc}">
+        `;
+    } catch (err) {
+        weatherDiv.textContent = 'Nie udało się pobrać pogody.';
+        console.error(err);
+    }
+}
 
     async function fetchJSON(url, options={}) {
         try { const res = await fetch(url, options); return await res.json(); }
@@ -191,4 +216,5 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+	loadWeather();
 });
