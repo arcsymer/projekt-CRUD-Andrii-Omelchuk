@@ -1,4 +1,4 @@
-name: CI/CD Deploy (AwardSpace)
+name: CI/CD Deploy via FTP (AwardSpace)
 
 on:
   push:
@@ -17,20 +17,26 @@ jobs:
         run: find . -name "*.php" -exec php -l {} \;
 
   deploy:
-    name: Deploy via SFTP
+    name: Deploy via FTP
     runs-on: ubuntu-latest
     needs: validate
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy via SFTP
-        uses: appleboy/scp-action@master
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.0
         with:
-          host: ${{ secrets.FTP_HOST }}
+          server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
-          source: "./"
-          target: "/public_html/"
-          rm: true
+          protocol: ftp
+          local-dir: ./
+          server-dir: /public_html/
+          log-level: verbose
+          exclude: |
+            .git*
+            .github
+            *.yml
+            tests
