@@ -1,34 +1,14 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const navDiv = document.getElementById('nav-buttons');
-	
-	async function loadWeather() {
-    const weatherDiv = document.getElementById('weather');
-    const apiKey = 'fd66f06221a276aa0235b98f0e57797d'; // <- сюда вставьте свой ключ
-    const city = 'Warsaw';
-    const units = 'metric';
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${units}&lang=pl&appid=${apiKey}`;
 
-    try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Błąd sieci');
-        const data = await res.json();
-        const temp = data.main.temp.toFixed(1);
-        const desc = data.weather[0].description;
-        const icon = data.weather[0].icon;
-
-        weatherDiv.innerHTML = `
-            Pogoda w Warszawie: ${temp}°C, ${desc} 
-            <img src="https://openweathermap.org/img/wn/${icon}.png" alt="${desc}">
-        `;
-    } catch (err) {
-        weatherDiv.textContent = 'Nie udało się pobrać pogody.';
-        console.error(err);
-    }
-}
-
-    async function fetchJSON(url, options={}) {
-        try { const res = await fetch(url, options); return await res.json(); }
-        catch(e){ console.error(e); return {error:'Network error'}; }
+    async function fetchJSON(url, options = {}) {
+        try { 
+            const res = await fetch(url, options); 
+            return await res.json(); 
+        } catch(e) { 
+            console.error(e); 
+            return { error: 'Network error' }; 
+        }
     }
 
     async function checkAuth() {
@@ -37,35 +17,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function setupNavigation(user) {
-        navDiv.innerHTML='';
+        navDiv.innerHTML = '';
         const buttons = user
             ? [
-                {text:'Strona główna', href:'index.html'},
-                {text:'Profil', href:'profile.html'},
-                {text:'Dodaj recenzję', href:'reviewadd.html'},
-                {text:'Top listy', href:'reviews.html'}
+                { text: 'Strona główna', href: 'index.html' },
+                { text: 'Profil', href: 'profile.html' },
+                { text: 'Dodaj recenzję', href: 'reviewadd.html' },
+                { text: 'Top listy', href: 'reviews.html' }
             ]
             : [
-                {text:'Strona główna', href:'index.html'},
-                {text:'Login / Rejestracja', href:'loginreg.html'},
-                {text:'Top listy', href:'reviews.html'}
+                { text: 'Strona główna', href: 'index.html' },
+                { text: 'Login / Rejestracja', href: 'loginreg.html' },
+                { text: 'Top listy', href: 'reviews.html' }
             ];
-        buttons.forEach(b=>{
-            const btn=document.createElement('button');
-            btn.textContent=b.text; btn.onclick=()=>location.href=b.href;
+        buttons.forEach(b => {
+            const btn = document.createElement('button');
+            btn.textContent = b.text; 
+            btn.onclick = () => location.href = b.href;
             navDiv.appendChild(btn);
         });
     }
 
     function enableButtonOnFields(button, fields){
-        function check(){ button.disabled = !fields.every(f=>f.value.trim()); }
-        fields.forEach(f=>f.addEventListener('input', check)); check();
+        function check() { button.disabled = !fields.every(f => f.value.trim()); }
+        fields.forEach(f => f.addEventListener('input', check)); 
+        check();
     }
 
     function createReviewItem(review, editCb, deleteCb) {
-        const div=document.createElement('div');
-        div.className='review-item';
-        div.innerHTML=`
+        const div = document.createElement('div');
+        div.className = 'review-item';
+        div.innerHTML = `
             <strong>${review.dish_name} - ${review.restaurant_name} (${review.rating})</strong><br>
             ${review.restaurant_address} - ${review.visit_date}<br>
             ${review.recommendation} - ${review.with_what || ''}<br>
@@ -73,93 +55,119 @@ document.addEventListener('DOMContentLoaded', async () => {
             <button class="edit-btn">Edytuj</button>
             <button class="delete-btn">Usuń</button>
         `;
-        div.querySelector('.edit-btn').addEventListener('click', ()=>editCb(review.id));
-        div.querySelector('.delete-btn').addEventListener('click', ()=>deleteCb(review.id));
+        div.querySelector('.edit-btn').addEventListener('click', () => editCb(review.id));
+        div.querySelector('.delete-btn').addEventListener('click', () => deleteCb(review.id));
         div.querySelector('.delete-btn').style.backgroundColor = '#e53935';
         div.querySelector('.delete-btn').style.color = '#fff';
         return div;
     }
 
-    async function logout(){ await fetchJSON('api.php?action=logout'); location.href='loginreg.html'; }
+    async function logout() { 
+        await fetchJSON('api.php?action=logout'); 
+        location.href = 'loginreg.html'; 
+    }
 
     const user = await checkAuth();
     setupNavigation(user);
 
-    if(document.getElementById('most-visited-list')){
-        const mostVisitedList=document.getElementById('most-visited-list');
-        const topDishesList=document.getElementById('top-dishes-list');
-        const searchInput=document.getElementById('search-input');
-        const searchResults=document.getElementById('search-results');
+    if(document.getElementById('most-visited-list')) {
+        const mostVisitedList = document.getElementById('most-visited-list');
+        const topDishesList = document.getElementById('top-dishes-list');
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
 
         async function loadTopLists() {
             const data = await fetchJSON('api.php?action=top_lists');
             if(data.error) return;
-            mostVisitedList.innerHTML='';
-            data.mostVisited.forEach(r=>{
-                const li=document.createElement('li');
-                li.textContent=`${r.restaurant_name} (${r.visits})`;
-                li.style.textAlign='center';
+            mostVisitedList.innerHTML = '';
+            data.mostVisited.forEach(r => {
+                const li = document.createElement('li');
+                li.textContent = `${r.restaurant_name} (${r.visits})`;
+                li.style.textAlign = 'center';
                 mostVisitedList.appendChild(li);
             });
-            topDishesList.innerHTML='';
-            data.topDishes.forEach(r=>{
-                const li=document.createElement('li');
-                li.textContent=`${r.dish_name} (${r.avg_rating})`;
-                li.style.textAlign='center';
+            topDishesList.innerHTML = '';
+            data.topDishes.forEach(r => {
+                const li = document.createElement('li');
+                li.textContent = `${r.dish_name} (${r.avg_rating})`;
+                li.style.textAlign = 'center';
                 topDishesList.appendChild(li);
             });
         }
         await loadTopLists();
 
-        if(searchInput){
-            searchInput.addEventListener('input', async ()=>{
-                const query=searchInput.value.trim();
-                if(!query){ searchResults.innerHTML=''; return; }
-                const data=await fetchJSON(`api.php?action=search_reviews&query=${encodeURIComponent(query)}`);
-                searchResults.innerHTML='';
-                data.forEach(r=>{ searchResults.appendChild(createReviewItem(r,()=>{},()=>{})); });
+        if(searchInput) {
+            searchInput.addEventListener('input', async () => {
+                const query = searchInput.value.trim();
+                if(!query){ searchResults.innerHTML = ''; return; }
+                const data = await fetchJSON(`api.php?action=search_reviews&query=${encodeURIComponent(query)}`);
+                searchResults.innerHTML = '';
+                data.forEach(r => { searchResults.appendChild(createReviewItem(r, () => {}, () => {})); });
             });
+        }
+
+        const weatherDiv = document.getElementById('weather');
+        if(weatherDiv) {
+            const apiKey = 'fd66f06221a276aa0235b98f0e57797d';
+            const city = 'Warsaw';
+            const units = 'metric';
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${units}&lang=pl&appid=${apiKey}`;
+            try {
+                const res = await fetch(url);
+                if(!res.ok) throw new Error('Błąd sieci');
+                const data = await res.json();
+                const temp = data.main.temp.toFixed(1);
+                const desc = data.weather[0].description;
+                const icon = data.weather[0].icon;
+                weatherDiv.innerHTML = `
+                    Pogoda w Warszawie: ${temp}°C, ${desc} 
+                    <img src="https://openweathermap.org/img/wn/${icon}.png" alt="${desc}">
+                `;
+            } catch(err) {
+                weatherDiv.textContent = 'Nie udało się pobrać pogody.';
+                console.error(err);
+            }
         }
     }
 
     if(document.getElementById('login-btn')){
-        const loginBtn=document.getElementById('login-btn');
-        const loginUsername=document.getElementById('login-username');
-        const loginPassword=document.getElementById('login-password');
-        const regBtn=document.getElementById('reg-btn');
-        const regUsername=document.getElementById('reg-username');
-        const regPassword=document.getElementById('reg-password');
+        const loginBtn = document.getElementById('login-btn');
+        const loginUsername = document.getElementById('login-username');
+        const loginPassword = document.getElementById('login-password');
+        const regBtn = document.getElementById('reg-btn');
+        const regUsername = document.getElementById('reg-username');
+        const regPassword = document.getElementById('reg-password');
 
-        enableButtonOnFields(loginBtn,[loginUsername,loginPassword]);
-        enableButtonOnFields(regBtn,[regUsername,regPassword]);
+        enableButtonOnFields(loginBtn, [loginUsername, loginPassword]);
+        enableButtonOnFields(regBtn, [regUsername, regPassword]);
 
-        loginBtn.addEventListener('click', async ()=>{
+        loginBtn.addEventListener('click', async () => {
             const data = await fetchJSON(`api.php?action=login&username=${encodeURIComponent(loginUsername.value)}&password=${encodeURIComponent(loginPassword.value)}`);
             if(data.success) location.href='profile.html'; else alert(data.error);
         });
 
-        regBtn.addEventListener('click', async ()=>{
+        regBtn.addEventListener('click', async () => {
             const data = await fetchJSON(`api.php?action=register&username=${encodeURIComponent(regUsername.value)}&password=${encodeURIComponent(regPassword.value)}`);
             if(data.success) location.href='profile.html'; else alert(data.error);
         });
     }
 
     if(document.getElementById('add-review-btn') || document.getElementById('edit-review-btn')){
-        const btn=document.getElementById('add-review-btn')||document.getElementById('edit-review-btn');
-        const fields=['dish-name','restaurant-name','restaurant-address','visit-date','rating','recommendation','with-what','comment'].map(id=>document.getElementById(id));
+        const btn = document.getElementById('add-review-btn') || document.getElementById('edit-review-btn');
+        const fields = ['dish-name','restaurant-name','restaurant-address','visit-date','rating','recommendation','with-what','comment'].map(id => document.getElementById(id));
         enableButtonOnFields(btn, fields.slice(0,6));
-        btn.addEventListener('click', async ()=>{
-            const data=Object.fromEntries(fields.map(f=>[f.id,f.value]));
-            const id=new URLSearchParams(location.search).get('id');
+        btn.addEventListener('click', async () => {
+            const data = Object.fromEntries(fields.map(f => [f.id, f.value]));
+            const id = new URLSearchParams(location.search).get('id');
             const action = id ? `edit_review&id=${id}` : 'add_review';
             const res = await fetchJSON(`api.php?action=${action}&${new URLSearchParams(data)}`);
             if(res.success){ alert('OK'); location.href='profile.html'; }
         });
 
         if(document.getElementById('edit-review-btn')){
-            const reviewId=new URLSearchParams(location.search).get('id');
-            const review=await fetchJSON(`api.php?action=get_review&id=${reviewId}`);
-            fields.forEach(f=>f.value=review[f.id]);
+            const reviewId = new URLSearchParams(location.search).get('id');
+            const review = await fetchJSON(`api.php?action=get_review&id=${reviewId}`);
+            fields.forEach(f => f.value = review[f.id]);
         }
     }
 
@@ -216,5 +224,4 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-	loadWeather();
 });
