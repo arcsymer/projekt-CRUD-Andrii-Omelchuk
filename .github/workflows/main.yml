@@ -17,7 +17,7 @@ jobs:
         run: |
           echo "Checking PHP syntax in all files..."
           ERRORS=0
-          for file in $(find foodreviews/ -name "*.php"); do
+          for file in $(find $GITHUB_WORKSPACE/foodreviews -name "*.php"); do
             php -l "$file"
             if [ $? -ne 0 ]; then
               ERRORS=$((ERRORS+1))
@@ -42,14 +42,14 @@ jobs:
           node-version: '20'
 
       - name: Install stylelint and eslint
-        working-directory: ./foodreviews
         run: |
+          cd $GITHUB_WORKSPACE/foodreviews
           npm init -y
           npm install stylelint stylelint-config-standard eslint eslint-config-standard --save-dev
 
       - name: Lint CSS
-        working-directory: ./foodreviews
         run: |
+          cd $GITHUB_WORKSPACE/foodreviews
           set +e
           npx stylelint "**/*.css" --allow-empty-input
           STYLE_ERRORS=$?
@@ -59,8 +59,8 @@ jobs:
           set -e
 
       - name: Lint JS
-        working-directory: ./foodreviews
         run: |
+          cd $GITHUB_WORKSPACE/foodreviews
           set +e
           npx eslint "**/*.js"
           JS_ERRORS=$?
@@ -85,7 +85,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
           protocol: ftp
-          local-dir: ./foodreviews
+          local-dir: $GITHUB_WORKSPACE/foodreviews
           server-dir: /public_html/
           log-level: verbose
           exclude: |
