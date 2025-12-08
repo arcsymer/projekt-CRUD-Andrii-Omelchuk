@@ -50,14 +50,24 @@ jobs:
       - name: Lint CSS
         run: |
           cd foodreviews
-          echo "Linting CSS..."
-          npx stylelint "**/*.css" --allow-empty-input || true
+          set +e
+          npx stylelint "**/*.css" --allow-empty-input
+          STYLE_ERRORS=$?
+          if [ $STYLE_ERRORS -ne 0 ]; then
+            echo "::warning ::CSS lint errors detected ($STYLE_ERRORS)"
+          fi
+          set -e
 
       - name: Lint JS
         run: |
           cd foodreviews
-          echo "Linting JS..."
-          npx eslint "**/*.js" || true
+          set +e
+          npx eslint "**/*.js"
+          JS_ERRORS=$?
+          if [ $JS_ERRORS -ne 0 ]; then
+            echo "::warning ::JS lint errors detected ($JS_ERRORS)"
+          fi
+          set -e
 
   deploy:
     name: Deploy via FTP (Incremental)
