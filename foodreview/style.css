@@ -211,6 +211,23 @@ li { padding: 8px 0; border-bottom: 1px solid #eee; text-align: center; }
     line-height: 1.6;
 }
 
+/* Дополнительный стиль для блока погоды */
+#weather {
+    margin-top: 15px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+#weather.loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 @media (max-width: 768px) {
     .container { flex-direction: column; padding: 10px; }
     header, footer { flex-direction: column; }
