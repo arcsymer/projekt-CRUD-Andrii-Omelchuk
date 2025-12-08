@@ -7,18 +7,13 @@ on:
 
 jobs:
   validate-php:
-<<<<<<< HEAD
     name: Validate PHP (safe)
-=======
-    name: Validate PHP
->>>>>>> a1f43c1bba165991cdc929527772782d80031454
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Validate PHP syntax
-<<<<<<< HEAD
         run: |
           echo "Checking PHP syntax in all files..."
           ERRORS=0
@@ -32,9 +27,6 @@ jobs:
           if [ $ERRORS -ne 0 ]; then
             echo "::warning ::PHP syntax errors detected! Check logs above."
           fi
-=======
-        run: find foodreviews/ -name "*.php" -exec php -l {} \;
->>>>>>> a1f43c1bba165991cdc929527772782d80031454
 
   lint-js-css:
     name: Lint JS and CSS
@@ -58,20 +50,12 @@ jobs:
       - name: Lint CSS
         run: |
           cd foodreviews
-<<<<<<< HEAD
           npx stylelint "**/*.css" --allow-empty-input || echo "No CSS files or lint errors found."
-=======
-          npx stylelint "**/*.css" --allow-empty-input
->>>>>>> a1f43c1bba165991cdc929527772782d80031454
 
       - name: Lint JS
         run: |
           cd foodreviews
-<<<<<<< HEAD
           npx eslint "**/*.js" || echo "No JS files or lint errors found."
-=======
-          npx eslint "**/*.js" || true
->>>>>>> a1f43c1bba165991cdc929527772782d80031454
 
   deploy:
     name: Deploy via FTP (Incremental)
