@@ -82,7 +82,7 @@ jobs:
           fi
 
   deploy:
-    name: Deploy via FTP (Incremental)
+    name: Deploy via FTP (AwardSpace)
     runs-on: ubuntu-latest
     needs: lint-js-css
     steps:
@@ -98,8 +98,8 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
           protocol: ftp
-          local-dir: ${{ github.workspace }}/foodreview/   # ← обязательно с /
-          server-dir: /public_html/
+          local-dir: ${{ github.workspace }}/foodreview/
+          server-dir: /foodreview.mywebcommunity.org/
           log-level: verbose
           exclude: |
             .github
