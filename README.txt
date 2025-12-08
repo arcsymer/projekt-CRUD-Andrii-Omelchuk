@@ -1,33 +1,33 @@
 FoodReviews – Recenzje restauracji i potraw
 
-FoodReviews to nowoczesna aplikacja webowa umożliwiająca użytkownikom przeglądanie, dodawanie, edytowanie i usuwanie recenzji dań w restauracjach. Projekt działa w architekturze **frontend + backend** z pełnym systemem CRUD oraz autoryzacją użytkowników.
+FoodReviews to nowoczesna aplikacja webowa umożliwiająca użytkownikom przeglądanie, dodawanie, edytowanie i usuwanie recenzji dań w restauracjach. Projekt działa w architekturze **frontend + backend** z pełnym systemem CRUD oraz autoryzacją użytkowników.  
+Dodatkowo na stronie głównej wyświetlana jest aktualna pogoda w Warszawie dzięki integracji z **OpenWeather API**.
 
 ---
 
 Struktura projektu
 
 foodreviews/
-├── index.html 		Strona główna
-├── loginreg.html 	Logowanie i rejestracja użytkowników
-├── profile.html 	Profil użytkownika i jego recenzje
-├── reviewadd.html 	Dodawanie nowych recenzji
-├── reviewedit.html Edycja istniejących recenzji
-├── reviews.html 	Top listy i wyszukiwanie recenzji
-├── style.css 		Stylizacja strony
-├── main.js 		Skrypty JS (logika frontendu)
-├── db.php 			Połączenie z bazą danych
-├── api.php 		Backend API (PHP + MySQL)
-└── README.md 		Dokumentacja projektu
+├── index.html 			Strona główna (z blokiem FoodReview i pogodą)
+├── loginreg.html 		Logowanie i rejestracja użytkowników
+├── profile.html 		Profil użytkownika i jego recenzje
+├── reviewadd.html 		Dodawanie nowych recenzji
+├── reviewedit.html 	Edycja istniejących recenzji
+├── reviews.html 		Top listy i wyszukiwanie recenzji
+├── style.css 			Stylizacja strony (w tym animacje i pogoda)
+├── main.js 			Skrypty JS (logika frontendu, CRUD, pogoda)
+├── db.php 				Połączenie z bazą danych MySQL
+├── api.php 			Backend API (PHP + MySQL, autoryzacja, recenzje)
+└── README.md 			Dokumentacja projektu
 
 ---
 
 Technologie
 
-Frontend: HTML5, CSS3, JavaScript
-Backend: PHP 8+ (REST API)  
+Frontend: HTML5, CSS3, JavaScript  
+Backend: PHP 8+  
 Baza danych: MySQL  
-
----
+API zewnętrzne: OpenWeather 
 
 Funkcjonalności
 
@@ -49,6 +49,7 @@ Top-listy:
 Dynamiczne wyświetlanie ocen i rekomendacji  
 Animowane tło i efekty przy użyciu CSS i JavaScript  
 Responsywny, nowoczesny design  
+Blok pogody: aktualna temperatura i opis pogody w Warszawie z kolorami zależnymi od temperatury oraz animacją ładowania
 
 ---
 
