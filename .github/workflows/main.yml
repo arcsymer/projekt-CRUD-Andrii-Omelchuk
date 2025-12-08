@@ -24,7 +24,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy via SFTP (dry-run)
+      - name: Deploy via SFTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.0
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -35,11 +35,9 @@ jobs:
           local-dir: ./
           server-dir: /public_html/
           passive: true
-          dry-run: true
           log-level: verbose
           exclude: |
             .git*
             .github
-            deploy.yml
-            tests
             *.yml
+            tests
