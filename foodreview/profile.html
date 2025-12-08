@@ -2,53 +2,31 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Profil - FoodReview</title>
+<title>FoodReviews - Profil</title>
 <link rel="stylesheet" href="style.css">
+<script defer src="main.js"></script>
 </head>
 <body>
-<div id="particles-js"></div>
-<header class="site-header">
-<nav class="nav">
-<a href="index.html">Strona główna</a>
-<a href="loginreg.html">Logowanie / Rejestracja</a>
-<a href="reviewadd.html">Dodaj recenzję</a>
-<a href="tops.html">Top listy</a>
-<a href="profile.html" class="active">Profil</a>
-</nav>
-</header>
+<header id="nav-buttons"></header>
 
-<div class="profile-container">
-<div class="profile-info card">
-<h2>Informacje o użytkowniku</h2>
-<p><strong>Nazwa użytkownika:</strong> <span id="username"></span></p>
-<p><strong>Data rejestracji:</strong> <span id="created_at"></span></p>
-<p><strong>Ilość napisanych recenzji:</strong> <span id="review_count"></span></p>
-<p><strong>Średnia ocena użytkownika:</strong> <span id="avg_rating"></span></p>
-<button class="btn-logout" id="logoutBtn">Wyloguj</button>
-</div>
-
-<div class="profile-edit card">
-<h2>Edytuj profil</h2>
-<form id="editProfileForm">
-<input type="text" name="nazwa_uzytkownika" placeholder="Nowy login" required>
-<input type="password" name="haslo" placeholder="Nowe hasło (opcjonalnie)">
-<button type="submit">Zaktualizuj profil</button>
-<div class="msg" id="profileMsg"></div>
-</form>
-</div>
+<div class="container">
+    <div class="block profile-block">
+        <h2>Profil użytkownika</h2>
+        <p>Username: <span id="username"></span></p>
+        <p>Data rejestracji: <span id="reg-date"></span></p>
+        <p>Liczba recenzji: <span id="reviews-count"></span></p>
+        <p>Średnia ocena: <span id="avg-rating"></span></p>
+        <input type="text" id="new-username" placeholder="Nowa nazwa użytkownika">
+        <input type="password" id="new-password" placeholder="Nowe hasło">
+        <button id="update-profile-btn" disabled>Aktualizuj profil</button>
+        <button id="logout-btn">Wyloguj</button>
+    </div>
+    <div class="block profile-block">
+        <h2>Twoje recenzje</h2>
+        <div id="user-reviews"></div>
+    </div>
 </div>
 
-<div class="profile-container">
-<div class="profile-reviews card" style="width: 100%;">
-<h2>Twoje ostatnie recenzje</h2>
-<ul id="userReviews"></ul>
-</div>
-</div>
-
-<script src="particles.js"></script>
-<script src="script.js"></script>
-<script>
-  particlesJS.load('particles-js','particles.json');
-</script>
+<footer>Andrii Omelchuk 67349</footer>
 </body>
 </html>

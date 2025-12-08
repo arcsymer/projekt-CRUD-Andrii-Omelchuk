@@ -2,46 +2,33 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>FoodReview</title>
+<title>FoodReviews - Strona Główna</title>
 <link rel="stylesheet" href="style.css">
+<script defer src="main.js"></script>
 </head>
 <body>
-<div id="particles-js"></div>
+<header id="nav-buttons"></header>
 
-<header class="site-header">
-<nav class="nav">
-<a href="index.html" class="active">Strona główna</a>
-<a href="loginreg.html">Logowanie / Rejestracja</a>
-<a href="reviewadd.html">Dodaj recenzję</a>
-<a href="tops.html">Top listy</a>
-<a href="profile.html">Profil</a>
-</nav>
-</header>
-
-<div class="container two-col centered">
-  <div class="left big">
-    <div class="top-pair">
-      <div class="card">
+<div class="container">
+    <div class="block">
         <h2>Najczęściej odwiedzane restauracje</h2>
-        <ul id="topRestaurants"></ul>
-      </div>
-      <div class="card">
-        <h2>Najwyżej ocenione dania</h2>
-        <ul id="topDishes"></ul>
-      </div>
+        <ul id="most-visited-list"></ul>
     </div>
-  </div>
-  <div class="right card">
-    <h1>FoodReview</h1>
-    <p>FoodReview to aplikacja stworzona dla miłośników jedzenia i dobrych restauracji. Możesz tu dodawać własne recenzje potraw, oceniać miejsca, poznawać opinie innych użytkowników oraz przeglądać listy najlepszych restauracji i dań w Polsce.</p>
-    <p>Załóż konto, zaloguj się i podziel się swoimi kulinarnymi doświadczeniami!</p>
-  </div>
+    <div class="block">
+        <h2>Najwyżej ocenione dania</h2>
+        <ul id="top-dishes-list"></ul>
+    </div>
+    <div class="block">
+        <h2>FoodReview</h2>
+        <p>FoodReviews to nowoczesna platforma dla miłośników jedzenia, gdzie możesz dzielić się swoimi opiniami o ulubionych daniach i restauracjach.  
+Dodawaj recenzje po każdej wizycie w restauracji, oceniaj potrawy w skali od 1 do 10, rekomenduj je znajomym i dziel się swoimi uwagami.  
+Przeglądaj top listy najczęściej odwiedzanych restauracji oraz najwyżej ocenianych dań, aby odkrywać nowe miejsca i smaki.  
+Zarządzaj swoim profilem, śledź liczbę swoich recenzji i średnią ocenę, aby lepiej monitorować swoje kulinarne doświadczenia.  
+FoodReviews to społeczność dla każdego, kto kocha dobre jedzenie i chce dzielić się swoimi opiniami z innymi smakoszami.
+</p></p>
+    </div>
 </div>
 
-<script src="particles.js"></script>
-<script src="script.js"></script>
-<script>
-  particlesJS.load('particles-js','particles.json', function(){ console.log('Particles loaded'); });
-</script>
+<footer>Andrii Omelchuk 67349</footer>
 </body>
 </html>

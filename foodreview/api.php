@@ -1,150 +1,110 @@
 <?php
 session_start();
+require_once 'db.php';
 header('Content-Type: application/json');
 
-$conn = new mysqli("fdb1034.awardspace.net", "4698990_foodreview", "Vistula67349AndriiOmelchuk", "4698990_foodreview");
-$conn->set_charset("utf8mb4");
-
-if ($conn->connect_error) {
-    die(json_encode(["error" => "Błąd połączenia z bazą danych: ".$conn->connect_error]));
-}
-
 $action = $_GET['action'] ?? '';
+function respond($data){ echo json_encode($data); exit; }
+function requireAuth(){ if(!isset($_SESSION['user_id'])) respond(['error'=>'Not authorized']); return (int)$_SESSION['user_id']; }
 
-switch ($action) {
+switch($action){
+    case 'get_user_info':
+        $id = requireAuth();
+        $stmt = $conn->prepare("SELECT id,username,registration_date FROM users WHERE id=?");
+        $stmt->bind_param("i",$id); $stmt->execute(); $user=$stmt->get_result()->fetch_assoc();
+
+        $stmt=$conn->prepare("SELECT COUNT(*) c FROM reviews WHERE user_id=?"); $stmt->bind_param("i",$id); $stmt->execute();
+        $user['reviews_count']=$stmt->get_result()->fetch_assoc()['c'];
+
+        $stmt=$conn->prepare("SELECT ROUND(AVG(rating),1) r FROM reviews WHERE user_id=?"); $stmt->bind_param("i",$id); $stmt->execute();
+        $user['avg_rating']=$stmt->get_result()->fetch_assoc()['r']??0;
+
+        respond($user);
 
     case 'login':
-        $data = json_decode(file_get_contents("php://input"), true);
-        $user = $conn->real_escape_string($data['nazwa_uzytkownika']);
-        $pass = $data['haslo'];
-
-        $res = $conn->query("SELECT * FROM users WHERE nazwa_uzytkownika='$user'");
-        if ($res->num_rows) {
-            $row = $res->fetch_assoc();
-            if (password_verify($pass, $row['haslo'])) {
-                $_SESSION['user_id'] = $row['id'];
-                echo json_encode(["success" => true]);
-            } else echo json_encode(["success" => false, "msg"=>"Nieprawidłowe hasło"]);
-        } else echo json_encode(["success"=>false,"msg"=>"Nie znaleziono użytkownika"]);
-        break;
+        $u=trim($_GET['username']??''); $p=trim($_GET['password']??'');
+        if(!$u||!$p) respond(['error'=>'Fields required']);
+        $stmt=$conn->prepare("SELECT * FROM users WHERE username=?"); $stmt->bind_param("s",$u); $stmt->execute(); $user=$stmt->get_result()->fetch_assoc();
+        if(!$user) respond(['error'=>'Nieprawidłowy login']); 
+        if(!password_verify($p,$user['password'])) respond(['error'=>'Nieprawidłowe hasło']);
+        $_SESSION['user_id']=$user['id']; respond(['success'=>true]);
 
     case 'register':
-        $data = json_decode(file_get_contents("php://input"), true);
-        $user = $conn->real_escape_string($data['nazwa_uzytkownika']);
-        $pass = password_hash($data['haslo'], PASSWORD_BCRYPT);
-
-        $res = $conn->query("INSERT INTO users (nazwa_uzytkownika, haslo) VALUES ('$user','$pass')");
-        if ($res) echo json_encode(["success"=>true]);
-        else echo json_encode(["success"=>false,"msg"=>"Użytkownik już istnieje"]);
-        break;
-
-    case 'addReview':
-        if (!isset($_SESSION['user_id'])) {
-            echo json_encode(["success"=>false,"msg"=>"Nie zalogowany"]);
-            exit;
-        }
-        $data = json_decode(file_get_contents("php://input"), true);
-
-        $stmt = $conn->prepare("INSERT INTO reviews 
-            (user_id, nazwa_dania, nazwa_restauracji, adres_restauracji, data_wizyty, ocena, rekomendacja, z_czym_spozywac, komentarz) 
-            VALUES (?,?,?,?,?,?,?,?,?)");
-
-        if (!$stmt) {
-            echo json_encode(["success"=>false,"msg"=>"Błąd przygotowania zapytania: ".$conn->error]);
-            exit;
-        }
-
-        $stmt->bind_param(
-            "issssisss",
-            $_SESSION['user_id'],
-            $data['nazwa_dania'],
-            $data['nazwa_restauracji'],
-            $data['adres_restauracji'],
-            $data['data_wizyty'],
-            $data['ocena'],
-            $data['rekomendacja'],
-            $data['z_czym_spozywac'],
-            $data['komentarz']
-        );
-
-        if ($stmt->execute()) {
-            echo json_encode(["success"=>true]);
-        } else {
-            echo json_encode(["success"=>false,"msg"=>"Błąd dodawania recenzji: ".$stmt->error]);
-        }
-        $stmt->close();
-        break;
-
-    case 'topRestaurants':
-        $limit = intval($_GET['limit'] ?? 10);
-        $res = $conn->query("SELECT nazwa_restauracji, COUNT(*) as visits FROM reviews GROUP BY nazwa_restauracji ORDER BY visits DESC LIMIT $limit");
-        $data = [];
-        while($row=$res->fetch_assoc()) $data[]=$row;
-        echo json_encode($data);
-        break;
-
-    case 'topDishes':
-        $limit = intval($_GET['limit'] ?? 10);
-        $res = $conn->query("SELECT nazwa_dania, ROUND(AVG(ocena),2) as avg_ocena FROM reviews GROUP BY nazwa_dania ORDER BY avg_ocena DESC LIMIT $limit");
-        $data = [];
-        while($row=$res->fetch_assoc()) $data[]=$row;
-        echo json_encode($data);
-        break;
-
-    case 'latestReviews':
-        $res = $conn->query("SELECT r.*, u.nazwa_uzytkownika FROM reviews r JOIN users u ON r.user_id=u.id ORDER BY r.created_at DESC LIMIT 10");
-        $data = [];
-        while($row=$res->fetch_assoc()) $data[]=$row;
-        echo json_encode($data);
-        break;
-
-    case 'search':
-        $q = $conn->real_escape_string($_GET['q'] ?? '');
-        $res = $conn->query("SELECT * FROM reviews WHERE nazwa_dania LIKE '%$q%' OR nazwa_restauracji LIKE '%$q%' ORDER BY created_at DESC");
-        $data = [];
-        while($row=$res->fetch_assoc()) $data[]=$row;
-        echo json_encode($data);
-        break;
-
-    case 'profile':
-        if (!isset($_SESSION['user_id'])) { echo json_encode(["success"=>false]); exit; }
-        $uid = $_SESSION['user_id'];
-        $res = $conn->query("SELECT nazwa_uzytkownika, created_at FROM users WHERE id=$uid");
-        $user = $res->fetch_assoc();
-        $res2 = $conn->query("SELECT COUNT(*) as count, ROUND(AVG(ocena),2) as avg FROM reviews WHERE user_id=$uid");
-        $stats = $res2->fetch_assoc();
-        echo json_encode(array_merge($user,$stats));
-        break;
-
-    case 'userReviews':
-        if (!isset($_SESSION['user_id'])) { echo json_encode([]); exit; }
-        $uid = $_SESSION['user_id'];
-        $res = $conn->query("SELECT * FROM reviews WHERE user_id=$uid ORDER BY created_at DESC LIMIT 10");
-        $data = [];
-        while($row=$res->fetch_assoc()) $data[]=$row;
-        echo json_encode($data);
-        break;
-
-    case 'updateProfile':
-        if (!isset($_SESSION['user_id'])) { echo json_encode(["success"=>false]); exit; }
-        $data = json_decode(file_get_contents("php://input"), true);
-        $uid = $_SESSION['user_id'];
-        $user = $conn->real_escape_string($data['nazwa_uzytkownika']);
-        $pass = $data['haslo'] ? password_hash($data['haslo'], PASSWORD_BCRYPT) : null;
-        if ($pass) $res = $conn->query("UPDATE users SET nazwa_uzytkownika='$user', haslo='$pass' WHERE id=$uid");
-        else $res = $conn->query("UPDATE users SET nazwa_uzytkownika='$user' WHERE id=$uid");
-        if ($res) echo json_encode(["success"=>true]);
-        else echo json_encode(["success"=>false,"msg"=>"Błąd aktualizacji"]);
-        break;
+        $u=trim($_GET['username']??''); $p=trim($_GET['password']??'');
+        if(!$u||!$p) respond(['error'=>'Fields required']);
+        $stmt=$conn->prepare("SELECT * FROM users WHERE username=?"); $stmt->bind_param("s",$u); $stmt->execute();
+        if($stmt->get_result()->num_rows>0) respond(['error'=>'Username exists']);
+        $hash=password_hash($p,PASSWORD_DEFAULT);
+        $stmt=$conn->prepare("INSERT INTO users(username,password,registration_date) VALUES(?,?,NOW())");
+        $stmt->bind_param("ss",$u,$hash); $stmt->execute();
+        $_SESSION['user_id']=$conn->insert_id; respond(['success'=>true]);
 
     case 'logout':
-        session_destroy();
-        echo json_encode(["success"=>true]);
-        break;
+        session_destroy(); respond(['success'=>true]);
 
-    default:
-        echo json_encode(["error"=>"Nieznana akcja"]);
+    case 'update_profile':
+        $id=requireAuth(); 
+        $u=trim($_GET['username']??''); $p=trim($_GET['password']??'');
+        if($u){ $stmt=$conn->prepare("UPDATE users SET username=? WHERE id=?"); $stmt->bind_param("si",$u,$id); $stmt->execute(); }
+        if($p){ $hash=password_hash($p,PASSWORD_DEFAULT); $stmt=$conn->prepare("UPDATE users SET password=? WHERE id=?"); $stmt->bind_param("si",$hash,$id); $stmt->execute(); }
+        respond(['success'=>true]);
+
+    case 'user_reviews':
+        $id=requireAuth();
+        $stmt=$conn->prepare("SELECT * FROM reviews WHERE user_id=? ORDER BY visit_date DESC"); $stmt->bind_param("i",$id); $stmt->execute();
+        $res=$stmt->get_result(); $data=[]; while($row=$res->fetch_assoc()) $data[]=$row; respond($data);
+
+    case 'add_review':
+        $id=requireAuth();
+        $f=['dish_name','restaurant_name','restaurant_address','visit_date','rating','recommendation','with_what','comment'];
+        foreach($f as $k) if(!isset($_GET[$k]) || $_GET[$k]==='') respond(['error'=>"Field $k required"]);
+        $vals=array_map(fn($k)=>$_GET[$k],$f);
+        $rating=intval($vals[4]); if($rating<1||$rating>10) respond(['error'=>'Rating 1-10']);
+        $stmt=$conn->prepare("INSERT INTO reviews(user_id,dish_name,restaurant_name,restaurant_address,visit_date,rating,recommendation,with_what,comment) VALUES(?,?,?,?,?,?,?,?,?)");
+        $stmt->bind_param("issssisss",$id,...$vals); $stmt->execute(); respond(['success'=>true]);
+
+    case 'get_review':
+        $id=requireAuth(); $rid=(int)$_GET['id'];
+        $stmt=$conn->prepare("SELECT * FROM reviews WHERE id=? AND user_id=?"); $stmt->bind_param("ii",$rid,$id); $stmt->execute();
+        $res=$stmt->get_result(); if($res->num_rows==0) respond(['error'=>'No access']); respond($res->fetch_assoc());
+
+    case 'edit_review':
+        $id=requireAuth(); $rid=(int)$_GET['id'];
+        $fields=['dish_name','restaurant_name','restaurant_address','visit_date','rating','recommendation','with_what','comment'];
+        $set=[]; $types=''; $vals=[];
+        foreach($fields as $f){
+            $key=str_replace('_','-',$f);
+            if(isset($_GET[$key])){
+                $set[]="$f=?";
+                $types .= $f==='rating'?'i':'s';
+                $vals[] = $_GET[$key];
+            }
+        }
+        if($set){
+            $stmt=$conn->prepare("UPDATE reviews SET ".implode(',',$set)." WHERE id=? AND user_id=?");
+            $types.='ii'; $vals[]=$rid; $vals[]=$id;
+            $stmt->bind_param($types,...$vals); $stmt->execute();
+        }
+        respond(['success'=>true]);
+
+    case 'delete_review':
+        $id=requireAuth(); $rid=(int)$_GET['id'];
+        $stmt=$conn->prepare("DELETE FROM reviews WHERE id=? AND user_id=?"); $stmt->bind_param("ii",$rid,$id); $stmt->execute(); respond(['success'=>true]);
+
+    case 'top_lists':
+        $data=['mostVisited'=>[],'topDishes'=>[]];
+        $res=$conn->query("SELECT restaurant_name,COUNT(*) as visits FROM reviews GROUP BY restaurant_name ORDER BY visits DESC LIMIT 10");
+        while($row=$res->fetch_assoc()) $data['mostVisited'][]=$row;
+        $res=$conn->query("SELECT dish_name,ROUND(AVG(rating),1) as avg_rating FROM reviews GROUP BY dish_name ORDER BY avg_rating DESC LIMIT 10");
+        while($row=$res->fetch_assoc()) $data['topDishes'][]=$row;
+        respond($data);
+
+    case 'search_reviews':
+        $q="%".($_GET['query']??'')."%";
+        $stmt=$conn->prepare("SELECT dish_name,restaurant_name,rating FROM reviews WHERE dish_name LIKE ? OR restaurant_name LIKE ?");
+        $stmt->bind_param("ss",$q,$q); $stmt->execute(); $res=$stmt->get_result();
+        $data=[]; while($row=$res->fetch_assoc()) $data[]=$row; respond($data);
+
+    default: respond(['error'=>'Unknown action']);
 }
-
-$conn->close();
 ?>
