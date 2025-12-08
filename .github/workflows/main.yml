@@ -80,7 +80,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
           protocol: ftp
-          local-dir: $GITHUB_WORKSPACE/foodreview
+          local-dir: $GITHUB_WORKSPACE/foodreview/
           server-dir: /public_html/
           log-level: verbose
           exclude: |
