@@ -1,4 +1,4 @@
-name: CI/CD Deploy via FTP (AwardSpace)
+name: Full CI/CD Deploy (FoodReview)
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  validate:
+  validate-php:
     name: Validate PHP
     runs-on: ubuntu-latest
     steps:
@@ -16,10 +16,34 @@ jobs:
       - name: Validate PHP syntax
         run: find . -name "*.php" -exec php -l {} \;
 
-  deploy:
-    name: Deploy via FTP
+  lint-js-css:
+    name: Lint JS and CSS
     runs-on: ubuntu-latest
-    needs: validate
+    needs: validate-php
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install stylelint and eslint
+        run: |
+          npm init -y
+          npm install stylelint stylelint-config-standard eslint eslint-config-standard --save-dev
+
+      - name: Lint CSS
+        run: npx stylelint "**/*.css"
+
+      - name: Lint JS
+        run: npx eslint "**/*.js"
+
+  deploy:
+    name: Deploy via FTP (Incremental)
+    runs-on: ubuntu-latest
+    needs: lint-js-css
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -36,7 +60,8 @@ jobs:
           server-dir: /public_html/
           log-level: verbose
           exclude: |
-            .git*
             .github
             *.yml
             tests
+          dry-run: false
+          state-name: ftp-deploy-state
