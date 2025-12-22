@@ -215,36 +215,3 @@ li { padding: 8px 0; border-bottom: 1px solid #eee; text-align: center; }
     .container { flex-direction: column; padding: 10px; }
     header, footer { flex-direction: column; }
 }
-
-/* Форум */
-.forum-container { display: flex; gap: 20px; }
-.forum-left, .forum-right {
-    flex: 1;
-    background: var(--block-bg);
-    border-radius: var(--radius);
-    padding: 15px;
-    box-shadow: 0 5px 20px var(--shadow);
-    display: flex;
-    flex-direction: column;
-    max-height: 600px;
-    overflow-y: auto;
-}
-
-#threads-list div { cursor: pointer; padding: 5px; border-bottom: 1px solid #eee; }
-#threads-list div:hover { background: #f0f0f0; }
-
-#chat-area { flex: 1; overflow-y: auto; padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; }
-#chat-area p { margin: 5px 0; }
-
-#chat-input { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ccc; }
-
-#create-thread-btn, #send-chat-btn { width: auto; padding: 8px 12px; border-radius: 8px; background: var(--primary); color: #fff; border: none; cursor: pointer; }
-#create-thread-btn:hover, #send-chat-btn:hover { background: var(--primary-hover); }
-
-.chat-title { font-weight: bold; text-align: center; margin-bottom: 10px; color: var(--primary); }
-
-#threads-list div.active-thread {
-    background-color: #4CAF50;
-    color: white;
-    font-weight: bold;
-}
