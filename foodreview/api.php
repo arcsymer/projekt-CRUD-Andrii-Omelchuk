@@ -1,10 +1,10 @@
 <?php
 session_start();
 require_once 'db.php';
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
 $action = $_GET['action'] ?? '';
-function respond($data){ echo json_encode($data); exit; }
+function respond($data){ echo json_encode($data, JSON_UNESCAPED_UNICODE); exit; }
 function requireAuth(){ if(!isset($_SESSION['user_id'])) respond(['error'=>'Not authorized']); return (int)$_SESSION['user_id']; }
 
 switch($action){
@@ -12,13 +12,10 @@ switch($action){
         $id = requireAuth();
         $stmt = $conn->prepare("SELECT id,username,registration_date FROM users WHERE id=?");
         $stmt->bind_param("i",$id); $stmt->execute(); $user=$stmt->get_result()->fetch_assoc();
-
         $stmt=$conn->prepare("SELECT COUNT(*) c FROM reviews WHERE user_id=?"); $stmt->bind_param("i",$id); $stmt->execute();
         $user['reviews_count']=$stmt->get_result()->fetch_assoc()['c'];
-
         $stmt=$conn->prepare("SELECT ROUND(AVG(rating),1) r FROM reviews WHERE user_id=?"); $stmt->bind_param("i",$id); $stmt->execute();
         $user['avg_rating']=$stmt->get_result()->fetch_assoc()['r']??0;
-
         respond($user);
 
     case 'login':
@@ -104,6 +101,27 @@ switch($action){
         $stmt=$conn->prepare("SELECT dish_name,restaurant_name,rating FROM reviews WHERE dish_name LIKE ? OR restaurant_name LIKE ?");
         $stmt->bind_param("ss",$q,$q); $stmt->execute(); $res=$stmt->get_result();
         $data=[]; while($row=$res->fetch_assoc()) $data[]=$row; respond($data);
+
+    case 'get_threads':
+        requireAuth();
+        $res=$conn->query("SELECT id,title FROM threads ORDER BY id DESC");
+        $data=[]; while($row=$res->fetch_assoc()) $data[]=$row;
+        respond($data);
+
+    case 'get_messages':
+        requireAuth();
+        $tid=(int)($_GET['thread_id']??0);
+        $stmt=$conn->prepare("SELECT m.id,m.content,u.username FROM messages m JOIN users u ON m.user_id=u.id WHERE m.thread_id=? ORDER BY m.id ASC");
+        $stmt->bind_param("i",$tid); $stmt->execute();
+        $res=$stmt->get_result(); $data=[]; while($row=$res->fetch_assoc()) $data[]=$row; respond($data);
+
+    case 'create_thread':
+        $id=requireAuth(); $title=trim($_GET['title']??''); if(!$title) respond(['error'=>'No title']);
+        $stmt=$conn->prepare("INSERT INTO threads(title,user_id) VALUES(?,?)"); $stmt->bind_param("si",$title,$id); $stmt->execute(); respond(['success'=>true]);
+
+    case 'send_message':
+        $id=requireAuth(); $tid=(int)($_GET['thread_id']??0); $content=trim($_GET['content']??''); if(!$content) respond(['error'=>'No content']);
+        $stmt=$conn->prepare("INSERT INTO messages(thread_id,user_id,content) VALUES(?,?,?)"); $stmt->bind_param("iis",$tid,$id,$content); $stmt->execute(); respond(['success'=>true]);
 
     default: respond(['error'=>'Unknown action']);
 }

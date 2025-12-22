@@ -2,8 +2,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const navDiv = document.getElementById('nav-buttons');
 
     async function fetchJSON(url, options={}) {
-        try { const res = await fetch(url, options); return await res.json(); }
-        catch(e){ console.error(e); return {error:'Network error'}; }
+        try { 
+            const res = await fetch(url, options); 
+            return await res.json(); 
+        } catch(e){ 
+            console.error(e); 
+            return {error:'Network error'}; 
+        }
     }
 
     async function checkAuth() {
@@ -12,12 +17,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function setupNavigation(user) {
-        navDiv.innerHTML='';
+        navDiv.innerHTML = '';
         const buttons = user
             ? [
                 {text:'Strona główna', href:'index.html'},
                 {text:'Profil', href:'profile.html'},
                 {text:'Dodaj recenzję', href:'reviewadd.html'},
+                {text:'Forum', href:'forum.html'},
                 {text:'Top listy', href:'reviews.html'}
             ]
             : [
@@ -27,7 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             ];
         buttons.forEach(b=>{
             const btn=document.createElement('button');
-            btn.textContent=b.text; btn.onclick=()=>location.href=b.href;
+            btn.textContent=b.text;
+            btn.onclick=()=>location.href=b.href;
             navDiv.appendChild(btn);
         });
     }
@@ -55,10 +62,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         return div;
     }
 
-    async function logout(){ await fetchJSON('api.php?action=logout'); location.href='loginreg.html'; }
+    async function logout(){ 
+        await fetchJSON('api.php?action=logout'); 
+        location.href='loginreg.html'; 
+    }
 
     const user = await checkAuth();
     setupNavigation(user);
+
+    if(document.getElementById('logout-btn')){
+        document.getElementById('logout-btn').addEventListener('click', logout);
+    }
 
     const mostVisitedList=document.getElementById('most-visited-list');
     const topDishesList=document.getElementById('top-dishes-list');
@@ -139,8 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    if(document.getElementById('logout-btn')){
-        document.getElementById('logout-btn').addEventListener('click', logout);
+    if(document.getElementById('username')){
         const usernameSpan = document.getElementById('username');
         const regDateSpan = document.getElementById('reg-date');
         const reviewsCountSpan = document.getElementById('reviews-count');
@@ -154,8 +167,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             avgRatingSpan.textContent = user.avg_rating;
         }
 
-        const reviews = await fetchJSON('api.php?action=user_reviews');
-        if(userReviewsDiv) {
+        if(userReviewsDiv){
+            const reviews = await fetchJSON('api.php?action=user_reviews');
             userReviewsDiv.innerHTML = '';
             reviews.forEach(r => {
                 userReviewsDiv.appendChild(createReviewItem(r,
@@ -225,5 +238,81 @@ document.addEventListener('DOMContentLoaded', async () => {
             weatherDiv.textContent = 'Nie udało się pobrać pogody.';
             console.error(err);
         }
+    }
+
+    // Форум
+    const threadsList = document.getElementById('threads-list');
+    const chatArea = document.getElementById('chat-area');
+    const chatTitle = document.getElementById('chat-title');
+    const chatInput = document.getElementById('chat-input');
+    const sendChatBtn = document.getElementById('send-chat-btn');
+    const createThreadBtn = document.getElementById('create-thread-btn');
+    const threadTitleInput = document.getElementById('thread-title-input');
+
+    let currentThreadId = null;
+
+    if(!user && (threadsList || chatArea || createThreadBtn)){
+        location.href = 'loginreg.html';
+    }
+
+    if(threadsList && chatArea && createThreadBtn && threadTitleInput && chatInput && sendChatBtn){
+        async function loadThreads(selectThreadId = null){
+            const data = await fetchJSON('api.php?action=get_threads');
+            threadsList.innerHTML = '';
+            data.forEach(t=>{
+                const div = document.createElement('div');
+                div.textContent = t.title;
+                if(t.id === currentThreadId) div.classList.add('active-thread');
+                div.addEventListener('click', ()=>{
+                    currentThreadId = t.id;
+                    loadThreads();
+                    loadChat(t.id, t.title);
+                });
+                threadsList.appendChild(div);
+            });
+            if(selectThreadId){
+                currentThreadId = selectThreadId;
+                loadThreads();
+                const thread = data.find(t => t.id === selectThreadId);
+                if(thread) loadChat(thread.id, thread.title);
+            }
+        }
+
+        async function loadChat(threadId, title){
+            chatTitle.textContent = title;
+            const data = await fetchJSON(`api.php?action=get_messages&thread_id=${threadId}`);
+            chatArea.innerHTML = '';
+            data.forEach(m=>{
+                const msgDiv = document.createElement('div');
+                msgDiv.textContent = `${m.username}: ${m.content}`;
+                msgDiv.style.padding = '4px 0';
+                chatArea.appendChild(msgDiv);
+            });
+            chatArea.scrollTop = chatArea.scrollHeight;
+            sendChatBtn.onclick = async ()=>{
+                const content = chatInput.value.trim();
+                if(!content) return;
+                const res = await fetchJSON(`api.php?action=send_message&thread_id=${threadId}&content=${encodeURIComponent(content)}`);
+                if(res.success){
+                    chatInput.value='';
+                    loadChat(threadId, title);
+                } else alert(res.error || 'Błąd wysyłania');
+            };
+        }
+
+        createThreadBtn.addEventListener('click', async ()=>{
+            const title = threadTitleInput.value.trim();
+            if(!title) { alert('Wpisz temat dyskusji!'); return; }
+            const res = await fetchJSON(`api.php?action=create_thread&title=${encodeURIComponent(title)}`);
+            if(res.success){
+                threadTitleInput.value = '';
+                const threadsData = await fetchJSON('api.php?action=get_threads');
+                const newThread = threadsData[threadsData.length - 1];
+                if(newThread) loadThreads(newThread.id);
+                else loadThreads();
+            } else alert(res.error || 'Błąd tworzenia dyskusji');
+        });
+
+        loadThreads();
     }
 });
